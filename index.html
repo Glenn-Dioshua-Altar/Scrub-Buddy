@@ -3,14 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>DSAT Scrub Assistant</title>
+<title>DSAT Scrub Buddy</title>
 <style>
 :root{
   color-scheme: light;
   --bg:#f3f4f6; --card:#ffffff; --text:#15171c; --muted:#5a606c; --line:#d9dde4; --soft:#eef1f6;
   --primary:#2456c9; --primary-ink:#ffffff; --primary-soft:#e4ecfb;
   --ok:#11703a; --ok-bg:#e1f3e8; --warn:#8a5600; --warn-bg:#fff2d3; --bad:#b42318; --bad-bg:#fde7e5;
-  --person:#2a78d6; --process:#eb6834; --nc:#8a8984; --undecided:#c9ccd2; --driver:#2a78d6;
+  /* L1 colours follow the FS DSAT RCA Matrix sheet */
+  --c-people:#2a78d6; --c-process:#eb6834; --c-policy:#6250d6; --c-product:#008300; --c-survey:#8a8984;
+  --t-people:#cfe2f3; --t-process:#fce5cd; --t-policy:#d9d2e9; --t-product:#d9ead3; --t-survey:#efefef; --t-ink:#15171c;
+  --c-ctrl:#2a78d6; --c-nc:#5f6b7a; --c-undecided:#c9ccd2;
   --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
   --radius:12px;
 }
@@ -20,7 +23,9 @@
     --bg:#121316; --card:#1c1e22; --text:#eeeef0; --muted:#a6abb5; --line:#33363d; --soft:#262930;
     --primary:#5b8def; --primary-ink:#0d1220; --primary-soft:#1f2b44;
     --ok:#5fd18c; --ok-bg:#16301f; --warn:#f2b84b; --warn-bg:#33270f; --bad:#ff8a80; --bad-bg:#3a1b19;
-    --person:#3987e5; --process:#d95926; --nc:#8f8e88; --undecided:#4a4d55; --driver:#3987e5;
+    --c-people:#3987e5; --c-process:#d95926; --c-policy:#9085e9; --c-product:#0ca30c; --c-survey:#8f8e88;
+    --t-people:#1d3550; --t-process:#4a2f17; --t-policy:#332b52; --t-product:#1e3a1c; --t-survey:#3a3b3e; --t-ink:#eeeef0;
+    --c-ctrl:#3987e5; --c-nc:#8794a6; --c-undecided:#4a4d55;
     --shadow:none;
   }
 }
@@ -29,13 +34,13 @@ html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
 h1,h2,h3{line-height:1.25;margin:0 0 .5rem}
 h2{font-size:1.15rem}
-h3{font-size:1rem}
+h3{font-size:1rem;margin-top:14px}
 p{margin:.25rem 0 .75rem}
 a{color:var(--primary)}
 .wrap{max-width:980px;margin:0 auto;padding:0 16px}
 header.top{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:20}
 header.top .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:8px;padding-bottom:8px}
-.brand{font-weight:700;font-size:1.05rem;margin-right:auto;white-space:nowrap}
+.brand{font-weight:800;font-size:1.1rem;margin-right:auto;white-space:nowrap}
 .brand small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
 nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
 nav.tabs button{min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;font-weight:600;cursor:pointer}
@@ -50,7 +55,7 @@ nav.tabs button[aria-current="page"]{background:var(--primary);border-color:var(
 .privacy .wrap{padding-top:8px;padding-bottom:8px}
 .storage-warn{background:var(--bad-bg);color:var(--bad);font-weight:600;font-size:.9rem}
 .storage-warn .wrap{padding:8px 16px}
-main{padding:16px 0 120px}
+main{padding:16px 0 130px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
 .muted{color:var(--muted)}
 .small{font-size:.88rem}
@@ -76,9 +81,14 @@ input:focus,select:focus,textarea:focus,button:focus-visible,[role=button]:focus
 .badge.ok{background:var(--ok-bg);color:var(--ok)}
 .badge.warn{background:var(--warn-bg);color:var(--warn)}
 .badge.bad{background:var(--bad-bg);color:var(--bad)}
-.badge.person{background:var(--person);color:#fff}
-.badge.process{background:var(--process);color:#fff}
-.badge.nc{background:var(--nc);color:#fff}
+.badge.ctrl{background:var(--c-ctrl);color:#fff}
+.badge.nc{background:var(--c-nc);color:#fff}
+.l1{display:inline-block;padding:3px 10px;border-radius:6px;font-weight:800;font-size:.78rem;letter-spacing:.02em;color:var(--t-ink);background:var(--soft);white-space:nowrap}
+.l1.people{background:var(--t-people);box-shadow:inset 4px 0 var(--c-people)}
+.l1.process{background:var(--t-process);box-shadow:inset 4px 0 var(--c-process)}
+.l1.policy{background:var(--t-policy);box-shadow:inset 4px 0 var(--c-policy)}
+.l1.product{background:var(--t-product);box-shadow:inset 4px 0 var(--c-product)}
+.l1.survey{background:var(--t-survey);box-shadow:inset 4px 0 var(--c-survey)}
 .notice{border-radius:10px;padding:10px 12px;margin:10px 0;font-weight:500}
 .notice.ok{background:var(--ok-bg);color:var(--ok)}
 .notice.warn{background:var(--warn-bg);color:var(--warn)}
@@ -99,15 +109,21 @@ input:focus,select:focus,textarea:focus,button:focus-visible,[role=button]:focus
 
 /* option cards */
 .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:8px 0}
-.opt{position:relative;border:2px solid var(--line);border-radius:12px;padding:12px 44px 12px 12px;cursor:pointer;background:var(--card);min-height:56px;user-select:none}
+.opts.one{grid-template-columns:1fr}
+.opt{position:relative;border:2px solid var(--line);border-radius:12px;padding:12px 44px 12px 12px;cursor:pointer;background:var(--card);min-height:52px;user-select:none}
 .opt:hover{border-color:var(--primary)}
 .opt.sel{border-color:var(--primary);background:var(--primary-soft)}
 .opt .t{font-weight:700}
 .opt .d{font-size:.88rem;color:var(--muted)}
 .opt .q{font-size:.85rem;margin-top:6px;font-style:italic}
 .opt .tip{position:absolute;top:8px;right:8px}
+.opt.people{border-left:6px solid var(--c-people)}
+.opt.process{border-left:6px solid var(--c-process)}
+.opt.policy{border-left:6px solid var(--c-policy)}
+.opt.product{border-left:6px solid var(--c-product)}
+.opt.survey{border-left:6px solid var(--c-survey)}
 .tip{width:30px;height:30px;min-width:30px;border-radius:50%;border:1px solid var(--line);background:var(--soft);color:var(--text);font-weight:700;cursor:help;font-size:.9rem;display:inline-flex;align-items:center;justify-content:center;padding:0;vertical-align:middle}
-#tipbox{position:fixed;z-index:100;max-width:300px;background:var(--text);color:var(--bg);padding:10px 12px;border-radius:10px;font-size:.9rem;line-height:1.35;box-shadow:0 6px 24px rgba(0,0,0,.25);display:none}
+#tipbox{position:fixed;z-index:100;max-width:320px;background:var(--text);color:var(--bg);padding:10px 12px;border-radius:10px;font-size:.9rem;line-height:1.35;box-shadow:0 6px 24px rgba(0,0,0,.25);display:none}
 .seg{display:inline-flex;flex-wrap:wrap;gap:6px}
 .seg button{min-height:44px;min-width:64px;padding:0 14px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--text);font:inherit;font-weight:600;cursor:pointer}
 .seg button.sel{border-color:var(--primary);background:var(--primary);color:var(--primary-ink)}
@@ -117,6 +133,16 @@ input:focus,select:focus,textarea:focus,button:focus-visible,[role=button]:focus
 .q-row{padding:10px 0;border-bottom:1px solid var(--line)}
 .q-row:last-child{border-bottom:0}
 .q-row .qt{font-weight:600;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.sugg{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 4px}
+.sugg button{min-height:40px;border:1px dashed var(--primary);background:var(--primary-soft);color:var(--text);border-radius:10px;padding:6px 10px;font:inherit;font-size:.88rem;cursor:pointer;text-align:left}
+
+/* tracker block */
+.tracker{display:grid;grid-template-columns:minmax(150px,auto) 1fr auto;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin:8px 0}
+.tracker > div{padding:9px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;min-height:46px}
+.tracker > div:nth-last-child(-n+3){border-bottom:0}
+.tracker .k{background:var(--soft);font-weight:700;font-size:.88rem}
+.tracker .v{font-weight:600;overflow-wrap:anywhere}
+@media (max-width:560px){.tracker{grid-template-columns:1fr auto}.tracker .k{grid-column:1 / -1;min-height:auto;padding:6px 10px}}
 
 /* verification */
 .vstep{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
@@ -139,36 +165,36 @@ input:focus,select:focus,textarea:focus,button:focus-visible,[role=button]:focus
 .ev{display:grid;grid-template-columns:92px 1fr;gap:8px 10px;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;align-items:start}
 .ev.pos{border-left:5px solid var(--ok)}
 .ev.neg{border-left:5px solid var(--bad)}
-.ev .ts{font-weight:700}
-.ev .evbody{display:grid;gap:6px}
+.ev .evbody{display:grid;gap:6px;min-width:0}
 .ev .evctl{display:flex;gap:8px;flex-wrap:wrap}
-.ev .evctl select{flex:1 1 160px;width:auto}
+.ev .evctl select{flex:1 1 200px;width:auto;min-width:0}
 .evlbl{font-weight:600}
 .chk{display:flex;gap:10px;align-items:center;width:100%;text-align:left;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;cursor:pointer;margin-bottom:6px}
 .chk .box{width:22px;height:22px;border:2px solid var(--muted);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex:none;font-weight:800}
 .chk.on{border-color:var(--primary);background:var(--primary-soft)}
 .chk.on .box{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+.chk .match{font-size:.78rem;font-weight:700;color:var(--ok)}
 
-/* actions */
 .act{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
 .act .grid2{gap:8px}
+.summary{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;min-height:300px;white-space:pre-wrap}
 
-/* summary */
-.summary{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9rem;min-height:260px;white-space:pre-wrap}
-
-/* wizard footer */
 .wfoot{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);z-index:15}
 .wfoot .wrap{display:flex;gap:8px;padding-top:10px;padding-bottom:10px;align-items:center;flex-wrap:wrap}
 .wfoot .sp{flex:1}
 #piiBar{width:100%}
 #piiBar:empty{display:none}
+.show-sm{display:none}
+@media (max-width:560px){
+  .wfoot .sp{display:none}
+  .wfoot .btn{flex:1 1 0;min-width:0;padding:0 6px;font-size:.92rem}
+  .hide-sm{display:none}.show-sm{display:inline}
+}
 
-/* history */
 .hist{border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:10px}
 .hist .hh{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
 .hist .hc{color:var(--muted);font-size:.92rem;margin-bottom:8px;overflow-wrap:anywhere}
 
-/* dashboard */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:var(--shadow)}
 .tile .n{font-size:1.7rem;font-weight:800;line-height:1.1}
@@ -185,13 +211,15 @@ th{color:var(--muted);font-weight:600;white-space:nowrap}
 .alert-card{border-color:var(--bad)}
 .overdue{color:var(--bad);font-weight:700}
 
-/* settings */
 .srow{display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap}
 .srow input[type=text]{flex:1 1 180px;width:auto}
 .srow .crit{display:flex;align-items:center;gap:6px;min-height:44px;font-weight:600;cursor:pointer}
 .srow .crit input{width:22px;height:22px}
+.fwrow{display:grid;grid-template-columns:150px 200px 1fr 150px auto;gap:6px;margin-bottom:6px;align-items:center}
+.fwrow input,.fwrow select{min-height:40px;padding:6px 8px;font-size:.9rem}
+@media (max-width:760px){.fwrow{grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;padding:8px}.fwrow .l3{grid-column:1 / -1}}
 
-#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;z-index:200;display:none;max-width:90vw;text-align:center}
+#toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;z-index:200;display:none;max-width:90vw;text-align:center}
 details summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
 .whys input{margin-bottom:6px}
 .sr{position:absolute;left:-9999px}
@@ -201,7 +229,7 @@ details summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;alig
 <body>
 <header class="top">
   <div class="wrap">
-    <div class="brand">DSAT Scrub Assistant<small>Offline. No audio. Nothing leaves this device.</small></div>
+    <div class="brand">DSAT Scrub Buddy<small>Offline. No audio. Nothing leaves this device.</small></div>
     <nav class="tabs" aria-label="Main">
       <button data-act="view" data-v="scrub">Scrub</button>
       <button data-act="view" data-v="history">History</button>
@@ -221,8 +249,15 @@ details summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;alig
 <script>
 'use strict';
 /* ================= Constants ================= */
-const LS_DB = 'dsatScrub.db.v1';
-const LS_CUR = 'dsatScrub.current.v1';
+const APP = 'DSAT Scrub Buddy';
+const LS_DB = 'dsatScrubBuddy.db.v2';
+const LS_CUR = 'dsatScrubBuddy.current.v2';
+const OLD_DB = 'dsatScrub.db.v1', OLD_CUR = 'dsatScrub.current.v1';
+const FW_NAME = 'FS DSAT RCA Matrix v2.0';
+/* Exact text of the "Framework" sheet in FS_DSAT_RCA_Matrix_v2.0.xlsx: L1 -> L2 -> [L3]. L4 = Controllable for PEOPLE, Non Controllable otherwise. */
+const FW_SOURCE = {"PEOPLE":{"Issue Identification":["Asked irrelevant or insufficient probing questions, resulting in misidentification of the customer's issue","Failed to confirm understanding of the customer's issue","Failed to accurately identify the customer's issue","Failed to review case history or conversation context","Placed unnecessary effort or burden on the customer"],"Investigation Quality":["Investigation was incomplete or insufficient","Investigation delayed resolution unnecessarily","Failed to gather relevant information before proceeding","Misinterpreted available information resulting in incorrect case handling"],"Issue Resolution":["Provided inaccurate information that did not resolve the issue","Provided incomplete information that did not resolve the issue","Provided an overly complex or unnecessary explanation","Failed to provide sufficient context to support the resolution","Responses lacked authenticity or ownership","Case handling was not compliant with privacy or security requirements"],"Process Adherence":["Failed to follow established process requirements","Case should have been escalated or transferred","Unnecessary escalation","Unnecessary transfer to another team","Incorrect escalation delayed resolution","Incorrect case tagging delayed or prevented resolution","Failed to complete or request authentication when appropriate","Failed to follow call workflow requirements","Failed to follow chat workflow requirements","Missed SLA due to advocate actions"],"Communication & Professionalism":["Failed to set or manage expectations appropriately","Tone was inappropriate for the situation","Lack of empathy","Could have demonstrated greater professionalism","Lack of clarity in communication","Information overload","Excessive grammar or spelling errors","Excessive sentence structure issues","Insufficient personalization of responses","Failed to demonstrate understanding of the customer's situation","Acted in an unprofessional manner"],"Capability & Knowledge":["Acted on incorrect guidance provided by the Escalation Team","Unfamiliar with the required process or workflow"]},"PROCESS":{"Support Tools":["CSAT survey was attributed to the incorrect case","Outbound call connectivity issues"],"Third Party":["Dissatisfied with required coordination or dependency on a third party","Dissatisfied with a third-party product, process, or policy"],"Speed":["Response was within SLA, but resolution speed did not meet expectations","Response exceeded SLA expectations","Multiple case handoffs resulted in a poor support experience"],"Contact Channel":["Preferred contact channel is not supported","Support is unavailable in the preferred language","Expected a phone call, but the case was not eligible for callback support"],"Workflow":["Workflow is documented but unclear or difficult to follow","Workflow is not documented","Documented workflow was followed but was not optimal for the customer experience"],"Content":["Documented guidance was difficult for advocate to locate","Topic is not covered in the knowledge base (KA, QRG, STAR IQ)"],"Safety":["Dissatisfied with the dispute handling process","Dissatisfied with the dispute withdrawal process"],"Unable to assist End-customer":["Unable to assist with unauthorized or unrecognized charge claims due to process limitations","Unable to discuss or act on an account not owned by the requester"],"Training":["Topic should be covered in training but currently is not"],"Other":["Unable to proceed due to lack of response or required information"]},"POLICY":{"Account Policy":["Unable to assist in Account closure/cancellation"],"Email Policy":["Did not receive an expected email notification","Dissatisfied with the quality, timeliness, or content of email notifications"],"Pricing Policy":["Dissatisfied with dispute or refund fees","Dissatisfied with account servicing or transaction fees","Dissatisfied with chargeback fees","Expected a fee waiver, discount, or exception"],"Privacy & Security Policy":["Dissatisfied with authentication or verification requirements","Information could not be disclosed due to privacy or security requirements","Unable to complete authentication requirements"],"Risk Policy":["Dissatisfied with the handling of negative balances or overdraft-related activities","Dissatisfied with dispute eligibility, outcome, or handling requirements","Dissatisfied with a declined request, restriction, or compliance-driven decision","Dissatisfied with identity verification requirements"],"Tax & Legal Advice":["Support unable to provide tax or legal advice"]},"PRODUCT":{"Feature":["Missing feature or functionality","Dissatisfied with an existing feature or product capability"],"Global Availability":["Product or service is not available in the requested country or region"],"Flagstar Outage":["Product defect, incident, or service degradation impacted the user experience"],"Complexity":["Product requires knowledge or skills beyond the customer's technical proficiency","Dissatisfied with the complexity of the product or customer experience"]},"SURVEY VALIDATION":{"Incongruent Survey":["Positive interaction received an unintended negative survey","Survey comments contradict survey rating"]}};
+const CTRL = 'Controllable', NCTRL = 'Non Controllable';
+const H_L1 = 'Primary Driver (L1)', H_L2 = 'Root Cause Category (L2)', H_L3 = 'Root Cause Detail (L3)', H_L4 = 'Controlability (L4)';
 const STEP_NAMES = ['Call info','Verification','Timeline','RCA','Action plan','Summary'];
 const VSTATUS = [
   {k:'done',  label:'Done',         cls:'ok'},
@@ -231,71 +266,131 @@ const VSTATUS = [
   {k:'order', label:'Out of order', cls:'warn'}
 ];
 const VLABEL = {done:'done', missed:'missed', late:'done late', order:'out of order'};
-const DEFAULT_DRIVERS = ['Resolution','Handle/hold time','Transfer','Tone/empathy','Policy','System','Other'];
+const K = (l1, l2, l3) => l1 + '|' + l2 + '|' + l3;
+const AUTH_KEY = K('PEOPLE','Process Adherence','Failed to complete or request authentication when appropriate');
 const CHIPS = [
-  {label:'Long hold no check-back', driver:'Handle/hold time'},
-  {label:'Dead air', driver:'Handle/hold time'},
-  {label:'Customer repeated issue', driver:'Resolution'},
-  {label:'Unneeded transfer', driver:'Transfer'},
-  {label:'Wrong info given', driver:'Resolution'},
-  {label:'Over-promised', driver:'Resolution'},
-  {label:'Interrupted customer', driver:'Tone/empathy'},
-  {label:'No empathy', driver:'Tone/empathy'},
-  {label:'Poor call control', driver:'Handle/hold time'},
-  {label:'System slow/down', driver:'System'},
-  {label:'Good handling', driver:'', positive:true}
+  {label:'Long hold no check-back', tag:K('PEOPLE','Communication & Professionalism','Failed to set or manage expectations appropriately')},
+  {label:'Dead air', tag:K('PEOPLE','Communication & Professionalism','Could have demonstrated greater professionalism')},
+  {label:'Customer repeated issue', tag:K('PEOPLE','Issue Identification','Placed unnecessary effort or burden on the customer')},
+  {label:'Did not confirm issue', tag:K('PEOPLE','Issue Identification',"Failed to confirm understanding of the customer's issue")},
+  {label:'Unneeded transfer', tag:K('PEOPLE','Process Adherence','Unnecessary transfer to another team')},
+  {label:'Wrong info given', tag:K('PEOPLE','Issue Resolution','Provided inaccurate information that did not resolve the issue')},
+  {label:'Incomplete info', tag:K('PEOPLE','Issue Resolution','Provided incomplete information that did not resolve the issue')},
+  {label:'Over-promised', tag:K('PEOPLE','Communication & Professionalism','Failed to set or manage expectations appropriately')},
+  {label:'Interrupted customer', tag:K('PEOPLE','Communication & Professionalism','Could have demonstrated greater professionalism')},
+  {label:'No empathy', tag:K('PEOPLE','Communication & Professionalism','Lack of empathy')},
+  {label:'Poor call control', tag:K('PEOPLE','Process Adherence','Failed to follow call workflow requirements')},
+  {label:'Skipped authentication', tag:AUTH_KEY},
+  {label:'No ownership', tag:K('PEOPLE','Issue Resolution','Responses lacked authenticity or ownership')},
+  {label:'System slow/down', tag:K('PRODUCT','Flagstar Outage','Product defect, incident, or service degradation impacted the user experience')},
+  {label:'Fee complaint', tag:K('POLICY','Pricing Policy','Dissatisfied with account servicing or transaction fees')},
+  {label:'Dispute process complaint', tag:K('PROCESS','Safety','Dissatisfied with the dispute handling process')},
+  {label:'KB unclear/missing', tag:K('PROCESS','Content','Topic is not covered in the knowledge base (KA, QRG, STAR IQ)')},
+  {label:'Good handling', tag:'', positive:true}
 ];
 const GATE1 = {
-  q1:{text:'Is the survey about THIS call?', tip:'Compare the survey comment with what you hear on this recording. If the customer is talking about an earlier call, a branch visit or someone else, the survey is not about this call.'},
-  q2:{text:'Is the customer rating the bank, product or policy, not the service?', tip:'Example: "Your fees are too high" or "I hate this rule" is about the bank or product, not about how the advocate handled the call.'},
-  q3:{text:'Was the correct outcome given, and the customer is still unhappy?', tip:'The advocate did the right thing and gave the right answer, but the customer still scored low. This is flagged so a reviewer can double-check if the DSAT is fair.'}
+  q1:{text:'Is the survey about THIS call?', tip:'Compare the survey with this recording. If the customer is talking about another case, call or contact, the survey was linked to the wrong case.'},
+  q2:{text:'Do the survey score and comment match what you heard?', tip:'Example of a mismatch: the customer wrote "very helpful, thank you" but gave a low score, or the call went well and the customer clearly misread the scale.'},
+  q3:{text:'Was the correct outcome given, and the customer is still unhappy?', tip:'The advocate gave the right answer, but the customer still scored low. This is flagged so a reviewer can double-check. It often ends up as POLICY or PROCESS.'}
 };
-const NC_REASONS = [
-  {k:'Previous interaction', tip:'The customer is upset about an earlier call, visit or contact, not this one.'},
-  {k:'Product/fee', tip:'The customer is unhappy with a bank product, rate or fee, not with the service on this call.'},
-  {k:'Policy', tip:'The customer dislikes a bank rule that was applied correctly. Nothing the advocate could change.'},
-  {k:'Wrong attribution', tip:'The survey was linked to the wrong advocate or the wrong call.'},
-  {k:'Unrealistic expectation', tip:'The customer wanted something no one could give (for example, waiving a fee that cannot be waived).'}
-];
 const G2 = [
-  {k:'yes', t:'Yes', d:'Person', tip:'A fully trained, motivated advocate would have avoided this DSAT. The cause is the advocate\'s knowledge, skill, behavior or tool use.'},
-  {k:'no', t:'No', d:'Process', tip:'Even the best advocate would have got this DSAT. The cause is a rule, procedure, training or system.'},
-  {k:'partly', t:'Partly', d:'Both (pick Primary + Secondary)', tip:'Both the advocate and the process played a part. You choose which one mattered more (Primary). The other becomes Secondary.'}
+  {k:'yes', t:'Yes', d:'PEOPLE (Controllable)', tip:'A fully trained, motivated advocate would have avoided this DSAT. The advocate\'s own actions caused it. Primary Driver = PEOPLE, Controllable.'},
+  {k:'no', t:'No', d:'PROCESS / POLICY / PRODUCT (Non Controllable)', tip:'Even the best advocate would have got this DSAT. A process, bank policy or the product caused it. Non Controllable.'},
+  {k:'partly', t:'Partly', d:'Both (pick Primary + Secondary)', tip:'Both the advocate and a process/policy/product played a part. Pick which mattered more as Primary. The other becomes Secondary. Your tracker gets the Primary L1-L4.'}
 ];
-const TYPE_TIPS = {
-  Person:'Choose Person as Primary if the advocate\'s actions mattered more than the process.',
-  Process:'Choose Process as Primary if the rule, procedure, training or system mattered more than the advocate.'
+const SIDE_TIPS = {
+  people:'PEOPLE is Primary: the advocate\'s actions mattered more. Tracker L4 = Controllable.',
+  nc:'PROCESS / POLICY / PRODUCT is Primary: the process, rule or product mattered more. Tracker L4 = Non Controllable.'
 };
-const SUBS = {
-  Person:[
-    {k:'Knowledge', d:'Didn\'t know', tip:'The advocate did not know the correct process, policy or answer.', q:'Could they explain the correct process if asked?'},
-    {k:'Skill', d:'Knew but couldn\'t execute', tip:'The advocate knew what to do but could not do it well live on the call (e.g. de-escalation, call control, explaining clearly).', q:'Can they explain it, but struggled to do it on the call?'},
-    {k:'Behavior', d:'Knew, could, didn\'t', tip:'The advocate knew what to do and was able to do it, but did not (skipped steps, rushed, poor attitude).', q:'Have they done this correctly on other calls?'},
-    {k:'Tool use', d:'Used the system wrong', tip:'The system worked, but the advocate used a screen, field or tool incorrectly.', q:'Was the system working, but they clicked or entered the wrong thing?'}
-  ],
-  Process:[
-    {k:'Policy', d:'Customer disliked a correct rule', tip:'The advocate applied the bank rule correctly, but the customer did not like the rule itself.', q:'Would any advocate have given the same answer under the rules?'},
-    {k:'Procedure gap', d:'Unclear, missing or conflicting steps', tip:'The official steps or KB were unclear, missing or contradicted each other, so there was no clear right path.', q:'If you open the KB/procedure, is the right step clearly written?'},
-    {k:'Training gap', d:'Did what was taught, but training was wrong/missing', tip:'The advocate did exactly what training taught, but the training was wrong, outdated or never covered this case.', q:'Does the training material cover this case correctly?'},
-    {k:'System', d:'Outage, slow system or wrong KB info', tip:'A system outage, slowness or wrong information in the KB/tool caused the problem.', q:'Would this have happened to anyone using the system at that time?'}
-  ]
+const L1_INFO = {
+  'PEOPLE':{cls:'people', tip:'The advocate\'s own actions caused the DSAT. Always Controllable.'},
+  'PROCESS':{cls:'process', tip:'A workflow, tool, contact channel, speed/SLA, third party, training or KB limit caused it. Non Controllable.'},
+  'POLICY':{cls:'policy', tip:'A bank rule caused it (fees, privacy and security, risk, account or email policy), and the advocate applied it correctly. Non Controllable.'},
+  'PRODUCT':{cls:'product', tip:'The product itself caused it: missing feature, outage, availability or complexity. Non Controllable.'},
+  'SURVEY VALIDATION':{cls:'survey', tip:'The survey does not reflect the interaction (wrong score, comment contradicts rating). Non Controllable.'}
 };
-const ACTION_MAP = {
-  'Knowledge':     {action:'Re-explain the correct process + quick quiz', owner:'Mentor'},
-  'Skill':         {action:'Role-play + side-by-side coaching', owner:'Mentor'},
-  'Behavior':      {action:'Coaching log; escalate to TL if repeated', owner:'Mentor -> TL'},
-  'Tool use':      {action:'Screen walkthrough of the system/tool', owner:'Mentor'},
-  'Policy':        {action:'Feedback to client / VOC report', owner:'TL'},
-  'Procedure gap': {action:'KB or procedure update request', owner:'Trainer/QA'},
-  'Training gap':  {action:'Training update request', owner:'Trainer/QA'},
-  'System':        {action:'IT ticket + incident note', owner:'TL/IT'}
+const L2_INFO = {
+  'Issue Identification':{tip:'The advocate did not correctly find or confirm what the customer needed: probing, confirming understanding, reading case history, or making the customer do extra work.', ask:'Did the advocate know the real issue before acting?'},
+  'Investigation Quality':{tip:'The advocate did not review or gather enough information, misread it, or investigated too slowly.', ask:'Was all available case information checked before deciding?'},
+  'Issue Resolution':{tip:'The answer itself was the problem: wrong, incomplete, too complex, missing context or ownership, or not privacy/security compliant.', ask:'Was the information given correct and complete?'},
+  'Process Adherence':{tip:'A required step was not followed: process, escalation/transfer rules, case tagging, authentication, call/chat workflow or SLA.', ask:'Is there a documented step the advocate skipped or did wrong?'},
+  'Communication & Professionalism':{tip:'How it was said: expectations, tone, empathy, professionalism, clarity, too much information, grammar, personalization.', ask:'Was the right answer given but delivered poorly?'},
+  'Capability & Knowledge':{tip:'The advocate did not know the process or workflow, or acted on wrong guidance from the Escalation Team.', ask:'Could they explain the correct process if asked?'},
+  'Support Tools':{tip:'A tool problem outside the advocate\'s control: survey linked to the wrong case, or outbound call connectivity issues.', ask:'Was the tool or survey link the problem, not the advocate?'},
+  'Third Party':{tip:'The customer is unhappy because a third party (merchant, partner, vendor) was involved, or with that third party\'s product/policy.', ask:'Would the issue go away if the third party acted differently?'},
+  'Speed':{tip:'Handled within SLA but resolution was slower than the customer wanted, or several handoffs made the experience poor.', ask:'Did the advocate meet SLA and follow routing rules?'},
+  'Contact Channel':{tip:'The customer wanted a channel, language or callback that is not supported.', ask:'Is the request outside the channels, languages or callbacks we offer?'},
+  'Workflow':{tip:'The workflow is unclear, not documented, or was followed correctly but is bad for the customer.', ask:'If you open the workflow, is the right step clearly written?'},
+  'Content':{tip:'Guidance is hard for the advocate to find, or the topic is not in the knowledge base (KA, QRG, STAR IQ).', ask:'Could you find the answer in the KB quickly?'},
+  'Safety':{tip:'The customer is unhappy with the dispute handling or dispute withdrawal process itself.', ask:'Was the dispute process followed correctly by the advocate?'},
+  'Unable to assist End-customer':{tip:'Process does not allow helping: unrecognized/unauthorized charge claims, or the caller does not own the account.', ask:'Would any advocate have been blocked the same way?'},
+  'Training':{tip:'The topic should be covered in training but currently is not.', ask:'Did the advocate do what training taught?'},
+  'Other':{tip:'Could not proceed because the customer did not respond or did not give required information.', ask:'Was the advocate waiting on the customer?'},
+  'Account Policy':{tip:'Account closure or cancellation could not be done because of policy.', ask:'Was the rule applied correctly by the advocate?'},
+  'Email Policy':{tip:'The customer did not get, or disliked, system email notifications.', ask:'Is this about automatic emails, not something the advocate promised?'},
+  'Pricing Policy':{tip:'The customer dislikes fees (dispute, refund, servicing, transaction, chargeback) or wanted a waiver outside policy.', ask:'Was the fee applied correctly per pricing policy?'},
+  'Privacy & Security Policy':{tip:'Authentication or privacy rules blocked or annoyed the customer, or the customer could not complete authentication.', ask:'Did the advocate follow the security rule correctly?'},
+  'Risk Policy':{tip:'Overdraft/negative balance, dispute eligibility/outcome, declined requests, restrictions or ID verification rules.', ask:'Was this a risk or compliance decision outside the advocate\'s control?'},
+  'Tax & Legal Advice':{tip:'Support is not allowed to give tax or legal advice.', ask:'Did the customer want tax or legal advice?'},
+  'Feature':{tip:'A feature is missing, or the customer dislikes how an existing feature works.', ask:'Does the product simply not do what the customer wanted?'},
+  'Global Availability':{tip:'The product or service is not available in the customer\'s country or region.', ask:'Is the product unavailable where the customer is?'},
+  'Flagstar Outage':{tip:'A product defect, incident or service degradation affected the customer.', ask:'Would this have happened to anyone using the product at that time?'},
+  'Complexity':{tip:'The product is too complex for the customer, or needs skills beyond their technical comfort.', ask:'Did the customer struggle with the product itself?'},
+  'Incongruent Survey':{tip:'The survey does not match the interaction: positive call got an unintended negative survey, or the comment contradicts the rating.', ask:'Do the comment and score match what you heard?'}
+};
+const LENS = [
+  {k:'Knowledge', d:'Didn\'t know', tip:'The advocate did not know the correct process, policy or answer.', q:'Could they explain the correct process if asked?'},
+  {k:'Skill', d:'Knew but couldn\'t execute', tip:'The advocate knew what to do but could not do it well live on the call (de-escalation, call control, explaining clearly).', q:'Can they explain it, but struggled to do it on the call?'},
+  {k:'Behavior', d:'Knew, could, didn\'t', tip:'The advocate knew what to do and was able to, but did not (skipped steps, rushed, attitude).', q:'Have they done this correctly on other calls?'},
+  {k:'Tool use', d:'Used the system wrong', tip:'The system worked, but the advocate used a screen, field or tool incorrectly.', q:'Was the system working, but they clicked or entered the wrong thing?'}
+];
+const LENS_ACTION = {
+  'Knowledge':{action:'Re-explain the correct process + quick quiz', owner:'Mentor'},
+  'Skill':{action:'Role-play + side-by-side coaching', owner:'Mentor'},
+  'Behavior':{action:'Coaching log; escalate to TL if repeated', owner:'Mentor -> TL'},
+  'Tool use':{action:'Screen walkthrough of the system/tool', owner:'Mentor'}
+};
+const L2_ACTION = {
+  'Issue Identification':{action:'Probing + active-listening coaching with role-play', owner:'Mentor'},
+  'Investigation Quality':{action:'Side-by-side on case review and investigation steps', owner:'Mentor'},
+  'Issue Resolution':{action:'Re-explain the correct resolution + quick quiz', owner:'Mentor'},
+  'Process Adherence':{action:'Process refresher + coaching log; escalate to TL if repeated', owner:'Mentor -> TL'},
+  'Communication & Professionalism':{action:'Call listening + soft-skills role-play', owner:'Mentor'},
+  'Capability & Knowledge':{action:'Re-explain the process/workflow + quick quiz', owner:'Mentor'},
+  'Support Tools':{action:'IT ticket or survey attribution correction request', owner:'TL/IT'},
+  'Third Party':{action:'VOC report: third-party dependency', owner:'TL'},
+  'Speed':{action:'VOC / operations feedback on resolution speed and handoffs', owner:'TL'},
+  'Contact Channel':{action:'VOC report: channel/language/callback request', owner:'TL'},
+  'Workflow':{action:'Workflow/procedure update request', owner:'Trainer/QA'},
+  'Content':{action:'KB update request (KA, QRG, STAR IQ)', owner:'Trainer/QA'},
+  'Safety':{action:'VOC feedback on dispute process', owner:'TL'},
+  'Unable to assist End-customer':{action:'VOC report: process limitation', owner:'TL'},
+  'Training':{action:'Training update request', owner:'Trainer/QA'},
+  'Other':{action:'Note only: waiting on customer', owner:'Mentor'},
+  'Flagstar Outage':{action:'IT ticket + incident note', owner:'TL/IT'},
+  'Incongruent Survey':{action:'Survey validation / removal request', owner:'QA'}
+};
+const L1_ACTION = {
+  'POLICY':{action:'Feedback to client / VOC report (policy)', owner:'TL'},
+  'PRODUCT':{action:'Product feedback / VOC report', owner:'TL'},
+  'PROCESS':{action:'Process feedback / VOC report', owner:'TL'},
+  'SURVEY VALIDATION':{action:'Survey validation / removal request', owner:'QA'},
+  'PEOPLE':{action:'Coaching session', owner:'Mentor'}
 };
 const OWNERS = ['Mentor','Mentor -> TL','TL','Trainer/QA','TL/IT','QA','IT'];
-const TIPS = {
+const TIPS_LENS = {
   'Knowledge':'Before your next shift, review the KB article for this topic and explain it back to your mentor in your own words.',
-  'Skill':'Slow down and follow the call flow one step at a time. Confirm with the customer before moving to the next step.',
+  'Skill':'Slow down and follow the call flow one step at a time. Confirm with the customer before moving on.',
   'Behavior':'Do every required step on every call, even when the call feels routine. The steps protect you and the customer.',
   'Tool use':'Double-check the screen and field before you act. Keep the walkthrough notes open as a checklist.'
+};
+const TIPS_L2 = {
+  'Issue Identification':'Ask one more probing question and repeat the issue back to the customer before you act.',
+  'Investigation Quality':'Check case history and notes fully before deciding the next step.',
+  'Issue Resolution':'Confirm the answer in the KB before sharing it, and check every question was answered before closing.',
+  'Process Adherence':'Follow every required step (authentication, workflow, transfer rules) on every call.',
+  'Communication & Professionalism':'Acknowledge how the customer feels first, then set clear expectations on what happens next and when.',
+  'Capability & Knowledge':'Review the process in the KB and explain it back to your mentor in your own words.'
 };
 
 /* ================= Utils ================= */
@@ -308,7 +403,6 @@ const today = () => isoDate(new Date());
 const addDays = (iso, n) => { const [y,m,d] = iso.split('-').map(Number); const dt = new Date(y, m-1, d); dt.setDate(dt.getDate()+n); return isoDate(dt); };
 const hasPII = v => /\d{6,}/.test(String(v || ''));
 const clone = o => JSON.parse(JSON.stringify(o));
-const other = t => t === 'Person' ? 'Process' : t === 'Process' ? 'Person' : '';
 function normTs(v){
   v = String(v || '').trim();
   let m = v.match(/^(\d{1,3}):([0-5]\d)$/);
@@ -329,17 +423,50 @@ function download(name, text, type){
   document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500);
 }
-function copyText(text){
+function copyText(text, label){
+  const msg = (label || 'Copied') + ' to clipboard';
   const fallback = () => {
     const ta = document.createElement('textarea'); ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
     document.body.appendChild(ta); ta.select();
     let ok = false; try { ok = document.execCommand('copy'); } catch(e) {}
-    ta.remove(); toast(ok ? 'Copied to clipboard' : 'Copy failed: select the text and copy it manually');
+    ta.remove(); toast(ok ? msg : 'Copy failed: select the text and copy it manually');
   };
-  if (navigator.clipboard && window.isSecureContext) {
-    navigator.clipboard.writeText(text).then(() => toast('Copied to clipboard'), fallback);
-  } else fallback();
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(() => toast(msg), fallback);
+  else fallback();
 }
+
+/* ================= Framework ================= */
+function defaultFramework(){
+  const out = [];
+  Object.entries(FW_SOURCE).forEach(([l1, l2s]) => Object.entries(l2s).forEach(([l2, l3s]) => l3s.forEach(l3 => out.push({l1, l2, l3, l4: l1 === 'PEOPLE' ? CTRL : NCTRL}))));
+  return out;
+}
+const fw = () => DB.settings.framework;
+const keyOf = r => K(r.l1, r.l2, r.l3);
+const parseKey = k => { const p = String(k || '').split('|'); return {l1:p[0] || '', l2:p[1] || '', l3:p.slice(2).join('|') || ''}; };
+const findRow = key => fw().find(r => keyOf(r) === key) || null;
+const uniq = a => [...new Set(a)];
+const l1List = () => uniq(fw().map(r => r.l1));
+const l2List = l1 => uniq(fw().filter(r => r.l1 === l1).map(r => r.l2));
+const l3List = (l1, l2) => fw().filter(r => r.l1 === l1 && r.l2 === l2);
+const l4For = c => { if (!c || !c.l1) return ''; const r = findRow(K(c.l1, c.l2, c.l3)); return r ? r.l4 : (c.l1 === 'PEOPLE' ? CTRL : NCTRL); };
+const l1Cls = l1 => (L1_INFO[l1] || {}).cls || '';
+const l1Badge = l1 => l1 ? '<span class="l1 ' + l1Cls(l1) + '">' + esc(l1) + '</span>' : '';
+const l4Badge = l4 => l4 ? '<span class="badge ' + (l4 === CTRL ? 'ctrl' : 'nc') + '">' + esc(l4) + '</span>' : '';
+const l2Tip = l2 => (L2_INFO[l2] || {}).tip || 'Root cause category from your RCA framework.';
+const l2Ask = l2 => (L2_INFO[l2] || {}).ask || '';
+function attributedKey(){
+  const r = fw().find(x => x.l2 === 'Support Tools' && /attribut/i.test(x.l3)) || fw().find(x => x.l1 === 'SURVEY VALIDATION');
+  return r ? keyOf(r) : '';
+}
+function invalidOptions(){
+  const rows = fw().filter(r => r.l1 === 'SURVEY VALIDATION');
+  const a = findRow(attributedKey());
+  if (a && !rows.includes(a)) rows.unshift(a);
+  return rows;
+}
+const ncL1s = () => l1List().filter(x => x !== 'PEOPLE' && x !== 'SURVEY VALIDATION');
+const allowedL1 = side => side === 'people' ? ['PEOPLE'] : ncL1s();
 
 /* ================= Storage ================= */
 let storageOK = true;
@@ -351,15 +478,18 @@ function showStorageWarn(){ $('#storageWarn').hidden = storageOK; }
 function defaultSettings(){
   return {
     verifSteps: [1,2,3,4,5].map(i => ({id: uid(), name: 'Step ' + i, critical: i <= 2})),
-    drivers: DEFAULT_DRIVERS.slice(),
-    advocates: []
+    advocates: [],
+    framework: defaultFramework(),
+    frameworkName: FW_NAME
   };
 }
-function defaultDB(){ return {app:'DSAT Scrub Assistant', version:1, settings: defaultSettings(), scrubs: []}; }
+function defaultDB(){ return {app:APP, version:2, settings: defaultSettings(), scrubs: []}; }
+const emptyCause = () => ({l1:'', l2:'', l3:''});
 function newRca(){
-  return {q1:'', q2:'', q3:'', ncReason:'', ncNote:'', g2:'', primaryType:'',
-          pSub:'', pExplain:'', pEvidence:[], sSub:'', sExplain:'', sEvidence:[],
-          justification:'', whys:['','','','','']};
+  return {q1:'', q2:'', q3:'', invalidKey:'', ncNote:'', g2:'', primarySide:'',
+          p: emptyCause(), s: emptyCause(), pLens:'', sLens:'',
+          pExplain:'', sExplain:'', pEvidence:[], sEvidence:[],
+          justification:'', whys:['','','','',''], legacy:''};
 }
 function newScrub(){
   const now = new Date().toISOString();
@@ -372,16 +502,17 @@ function newScrub(){
   };
 }
 function normScrub(s){
-  const base = newScrub();
-  const out = Object.assign(base, s || {});
-  out.rca = Object.assign(newRca(), (s && s.rca) || {});
-  if (!Array.isArray(out.rca.whys)) out.rca.whys = ['','','','',''];
-  while (out.rca.whys.length < 5) out.rca.whys.push('');
-  if (!Array.isArray(out.rca.pEvidence)) out.rca.pEvidence = [];
-  if (!Array.isArray(out.rca.sEvidence)) out.rca.sEvidence = [];
+  const out = Object.assign(newScrub(), s || {});
+  const r = Object.assign(newRca(), (s && s.rca) || {});
+  r.p = Object.assign(emptyCause(), r.p || {}); r.s = Object.assign(emptyCause(), r.s || {});
+  if (!Array.isArray(r.whys)) r.whys = [];
+  r.whys = r.whys.slice(0, 5); while (r.whys.length < 5) r.whys.push('');
+  if (!Array.isArray(r.pEvidence)) r.pEvidence = [];
+  if (!Array.isArray(r.sEvidence)) r.sEvidence = [];
+  out.rca = r;
   out.coaching = Object.assign({well:'', fix:'', tip:''}, (s && s.coaching) || {});
   ['verif','events','actions'].forEach(k => { if (!Array.isArray(out[k])) out[k] = []; });
-  out.events.forEach(e => { if (!e.id) e.id = uid(); });
+  out.events.forEach(e => { if (!e.id) e.id = uid(); if (e.tag == null) e.tag = ''; });
   out.actions.forEach(a => { if (!a.id) a.id = uid(); if (!a.status) a.status = 'Open'; });
   if (!out.id) out.id = uid();
   return out;
@@ -389,29 +520,57 @@ function normScrub(s){
 function normSettings(st){
   const d = defaultSettings();
   st = st || {};
+  const fwk = Array.isArray(st.framework) && st.framework.length
+    ? st.framework.map(r => ({l1:String(r.l1 || '').trim(), l2:String(r.l2 || '').trim(), l3:String(r.l3 || '').trim(), l4:String(r.l4 || '').trim() || (String(r.l1).trim() === 'PEOPLE' ? CTRL : NCTRL)})).filter(r => r.l1 && r.l2 && r.l3)
+    : d.framework;
   return {
     verifSteps: Array.isArray(st.verifSteps) && st.verifSteps.length ? st.verifSteps.map(v => ({id: v.id || uid(), name: String(v.name || ''), critical: !!v.critical})) : d.verifSteps,
-    drivers: Array.isArray(st.drivers) && st.drivers.length ? st.drivers.map(String) : d.drivers,
-    advocates: Array.isArray(st.advocates) ? st.advocates.map(String) : []
+    advocates: Array.isArray(st.advocates) ? st.advocates.map(String) : [],
+    framework: fwk.length ? fwk : d.framework,
+    frameworkName: st.frameworkName || (Array.isArray(st.framework) ? 'Custom framework' : FW_NAME)
   };
 }
+/* Old "DSAT Scrub Assistant" (v1) data: keep call info, verification, timeline, actions; old RCA kept as a note to re-pick. */
+function migrateV1(o){
+  const st = o.settings || {};
+  const settings = normSettings({verifSteps: st.verifSteps, advocates: (st.advocates || []).filter(a => !/^Sample Advocate /.test(a))});
+  const scrubs = (o.scrubs || []).filter(s => !s.sample).map(s => {
+    const r = s.rca || {};
+    let legacy = '';
+    if (r.q1 === 'no' || r.q2 === 'yes') legacy = 'Non-controllable - ' + (r.ncReason || '') + (r.ncNote ? ': ' + r.ncNote : '');
+    else if (r.pSub) legacy = (r.g2 === 'yes' ? 'Person' : r.g2 === 'no' ? 'Process' : r.primaryType || '') + ' - ' + r.pSub + (r.pExplain ? ': ' + r.pExplain : '') + (r.sSub ? ' | Secondary: ' + r.sSub : '');
+    const out = normScrub({id:s.id, status:'draft', createdAt:s.createdAt, updatedAt:s.updatedAt, advocate:s.advocate, callRef:s.callRef, date:s.date, callLength:s.callLength, comment:s.comment,
+      verif:s.verif, events:(s.events || []).map(e => ({id:e.id, ts:e.ts, chip:e.chip, note:e.note, positive:!!e.positive, tag:''})), actions:s.actions, coaching:s.coaching});
+    out.rca.legacy = legacy; out.rca.pExplain = r.pExplain || ''; out.rca.justification = r.justification || ''; out.rca.whys = (r.whys || []).concat(['','','','','']).slice(0,5);
+    out.actions.forEach(a => { a.auto = false; a.edited = true; });
+    return out;
+  });
+  return {settings, scrubs};
+}
 let DB = defaultDB();
+let migratedMsg = '';
 function loadDB(){
   const raw = lsGet(LS_DB);
   if (raw) {
-    try { const o = JSON.parse(raw); DB = {app:'DSAT Scrub Assistant', version:1, settings: normSettings(o.settings), scrubs: (o.scrubs || []).map(normScrub)}; }
+    try { const o = JSON.parse(raw); DB = {app:APP, version:2, settings: normSettings(o.settings), scrubs: (o.scrubs || []).map(normScrub)}; }
     catch(e){ DB = defaultDB(); }
+    return;
+  }
+  const old = lsGet(OLD_DB);
+  if (old) {
+    try {
+      const m = migrateV1(JSON.parse(old));
+      DB = {app:APP, version:2, settings:m.settings, scrubs:m.scrubs};
+      saveDB();
+      if (m.scrubs.length) migratedMsg = 'Moved ' + m.scrubs.length + ' scrub(s) from the old version as drafts. Re-pick their RCA using the FS DSAT RCA Matrix.';
+    } catch(e){ DB = defaultDB(); }
   }
 }
 function saveDB(){ lsSet(LS_DB, JSON.stringify(DB)); }
 
 /* ================= App state ================= */
-let cur = null;           // scrub being edited
-let step = 1;
-let view = 'scrub';
-let dirty = false;
-const ui = {addingAdv:false, newAdv:'', ev:{ts:'', chip:'', note:'', driver:''}, evErr:'', histQ:'', filt:{from:'', to:'', adv:''}, showErr:false, settingsMsg:''};
-
+let cur = null, step = 1, view = 'scrub', dirty = false;
+const ui = {addingAdv:false, newAdv:'', ev:{ts:'', chip:'', note:'', tag:''}, evErr:'', histQ:'', filt:{from:'', to:'', adv:''}, showErr:false, fwFilter:'', fwQ:'', fwPaste:'', fwMsg:''};
 let curTimer = null;
 function touch(){ dirty = true; clearTimeout(curTimer); curTimer = setTimeout(saveCur, 350); }
 function saveCur(){
@@ -423,11 +582,10 @@ function saveCur(){
 /* ================= Logic ================= */
 function verifResult(s){
   const v = s.verif || [];
-  if (!v.length) return {code:'N/A', cls:'none', label:'No verification steps set', issues:[]};
+  if (!v.length) return {code:'N/A', cls:'none', label:'No verification steps set', issues:[], unmarked:[]};
   const issues = v.filter(x => x.status && x.status !== 'done');
   const unmarked = v.filter(x => !x.status);
-  const critMiss = v.some(x => x.critical && x.status === 'missed');
-  if (critMiss) return {code:'FAIL', cls:'bad', label:'Compliance fail', issues, unmarked};
+  if (v.some(x => x.critical && x.status === 'missed')) return {code:'FAIL', cls:'bad', label:'Compliance fail', issues, unmarked};
   if (unmarked.length) return {code:'INCOMPLETE', cls:'none', label: unmarked.length + ' step(s) not checked yet', issues, unmarked};
   if (issues.length) return {code:'PARTIAL', cls:'warn', label:'Partial: some steps late, out of order or missed (non-critical)', issues, unmarked};
   return {code:'PASS', cls:'ok', label:'All verification steps done', issues, unmarked};
@@ -436,53 +594,61 @@ function verifDetail(s){
   const r = verifResult(s);
   if (r.code === 'N/A') return 'no steps set';
   const parts = r.issues.map(x => x.name + (x.critical ? ' [critical]' : '') + ' ' + VLABEL[x.status] + (x.ts ? ' @' + x.ts : ''));
-  if (r.unmarked && r.unmarked.length) parts.push(r.unmarked.length + ' not checked');
+  if (r.unmarked.length) parts.push(r.unmarked.length + ' not checked');
   return parts.length ? parts.join('; ') : 'all steps done';
 }
 const hasVerifMiss = s => (s.verif || []).some(x => x.status === 'missed');
 function gate1(s){
   const r = s.rca;
-  if (r.q1 === 'no') return {state:'nc', why:'Survey is not about this call', suggest:'Previous interaction'};
+  if (r.q1 === 'no') return {state:'invalid', why:'Survey is not about this call', suggest: attributedKey()};
   if (r.q1 !== 'yes') return {state:'incomplete'};
-  if (r.q2 === 'yes') return {state:'nc', why:'Customer is rating the bank/product/policy, not the service', suggest:'Product/fee'};
-  if (r.q2 !== 'no') return {state:'incomplete'};
+  if (r.q2 === 'no') { const sv = fw().find(x => x.l1 === 'SURVEY VALIDATION'); return {state:'invalid', why:'Survey score/comment does not match the call', suggest: sv ? keyOf(sv) : ''}; }
+  if (r.q2 !== 'yes') return {state:'incomplete'};
   if (!r.q3) return {state:'incomplete'};
   return {state:'valid', review: r.q3 === 'yes'};
 }
-function causeTypes(s){
+function sides(s){
   const r = s.rca;
-  const p = r.g2 === 'yes' ? 'Person' : r.g2 === 'no' ? 'Process' : r.g2 === 'partly' ? r.primaryType : '';
-  const sec = r.g2 === 'partly' && p ? other(p) : '';
+  const p = r.g2 === 'yes' ? 'people' : r.g2 === 'no' ? 'nc' : r.g2 === 'partly' ? r.primarySide : '';
+  const sec = r.g2 === 'partly' && p ? (p === 'people' ? 'nc' : 'people') : '';
   return {p, sec};
 }
-function rcaClass(s){
-  const g = gate1(s);
-  if (g.state === 'nc') return 'Non-controllable';
-  const {p} = causeTypes(s);
-  if (g.state === 'valid' && p && s.rca.pSub) return p;
-  return 'Undecided';
+const causeDone = c => !!(c && c.l1 && c.l2 && c.l3);
+/* The cause that goes into the tracker as L1-L4 */
+function primaryCause(s){
+  const g = gate1(s), r = s.rca;
+  if (g.state === 'invalid' && r.invalidKey) { const c = parseKey(r.invalidKey); return Object.assign(c, {l4: l4For(c), explain: r.ncNote, lens:'', evidence: liveEvidence(s, r.pEvidence)}); }
+  if (g.state === 'valid' && causeDone(r.p)) return Object.assign({}, r.p, {l4: l4For(r.p), explain: r.pExplain, lens: r.p.l1 === 'PEOPLE' ? r.pLens : '', evidence: liveEvidence(s, r.pEvidence)});
+  return null;
 }
+function secondaryCause(s){
+  const r = s.rca;
+  if (gate1(s).state !== 'valid' || !sides(s).sec || !causeDone(r.s)) return null;
+  return Object.assign({}, r.s, {l4: l4For(r.s), explain: r.sExplain, lens: r.s.l1 === 'PEOPLE' ? r.sLens : '', evidence: liveEvidence(s, r.sEvidence)});
+}
+const ctrlClass = s => { const p = primaryCause(s); return p ? p.l4 : 'Undecided'; };
 const evById = (s, id) => s.events.find(e => e.id === id);
 const evLabel = e => e.chip && e.note ? e.chip + ' - ' + e.note : (e.chip || e.note || '(no note)');
-const evText = e => e.ts + ' ' + evLabel(e) + (e.positive ? ' [positive]' : e.driver ? ' [' + e.driver + ']' : '');
+const tagShort = t => { if (!t) return ''; const p = parseKey(t); return p.l1 + ' > ' + p.l2 + ' > ' + p.l3; };
+const evText = e => e.ts + ' ' + evLabel(e) + (e.positive ? ' [positive]' : '');
 const sortedEvents = s => s.events.slice().sort((a,b) => tsSec(a.ts) - tsSec(b.ts));
 const liveEvidence = (s, list) => (list || []).filter(id => evById(s, id));
+const VERIF_OK_NC = c => (c.l1 === 'PROCESS' && ['Workflow','Content','Support Tools'].includes(c.l2)) || (c.l1 === 'PRODUCT' && c.l2 === 'Flagstar Outage');
 
 function step4Errors(s){
-  const errs = [];
-  const r = s.rca, g = gate1(s);
-  if (g.state === 'incomplete') { errs.push('Answer the Gate 1 questions (is the DSAT valid?).'); return errs; }
-  if (g.state === 'nc') { if (!r.ncReason) errs.push('Pick a Non-controllable reason.'); return errs; }
+  const errs = [], r = s.rca, g = gate1(s);
+  if (g.state === 'incomplete') { errs.push('Answer the Gate 1 questions (survey validation).'); return errs; }
+  if (g.state === 'invalid') { if (!r.invalidKey) errs.push('Pick the survey validation reason.'); return errs; }
   if (!r.g2) { errs.push('Answer Gate 2 (would a fully trained, motivated advocate have avoided this DSAT?).'); return errs; }
-  const {p, sec} = causeTypes(s);
-  if (!p) { errs.push('Choose which cause is Primary (Person or Process).'); return errs; }
-  if (!r.pSub) errs.push('Choose the Primary sub-cause.');
+  const {p, sec} = sides(s);
+  if (!p) { errs.push('Choose which side is Primary.'); return errs; }
+  if (!causeDone(r.p)) errs.push('Pick the Primary ' + H_L1 + ', ' + H_L2 + ' and ' + H_L3 + '.');
   if (!liveEvidence(s, r.pEvidence).length) errs.push('Evidence required: link at least one timeline timestamp to the Primary cause.');
-  if (hasVerifMiss(s) && p === 'Process') {
-    if (r.pSub && !['Procedure gap','System'].includes(r.pSub)) errs.push('A verification step was missed, so the Primary cause defaults to Person. Process is only allowed with Procedure gap or System plus a justification.');
-    else if (!r.justification.trim()) errs.push('Write a justification for why the verification miss is a Process cause (Procedure gap or System).');
+  if (hasVerifMiss(s) && p === 'nc' && r.p.l2) {
+    if (!VERIF_OK_NC(r.p)) errs.push('A verification step was missed, so this defaults to PEOPLE. Non Controllable is only allowed with PROCESS > Workflow / Content / Support Tools or PRODUCT > Flagstar Outage, plus a justification.');
+    else if (!r.justification.trim()) errs.push('Write a justification for why the verification miss is Non Controllable.');
   }
-  if (sec && !r.sSub) errs.push('Choose the Secondary sub-cause.');
+  if (sec && !causeDone(r.s)) errs.push('Pick the Secondary L1, L2 and L3.');
   return errs;
 }
 function step1Errors(s){
@@ -496,7 +662,7 @@ function piiFields(s){
   s.verif.forEach(v => f.push(['Verification time (' + v.name + ')', v.ts]));
   s.events.forEach(e => { f.push(['Timeline note', e.note]); f.push(['Timeline time', e.ts]); });
   const r = s.rca;
-  f.push(['Non-controllable note', r.ncNote], ['Primary explanation', r.pExplain], ['Secondary explanation', r.sExplain], ['Verification justification', r.justification]);
+  f.push(['Survey validation note', r.ncNote], ['Primary explanation', r.pExplain], ['Secondary explanation', r.sExplain], ['Verification justification', r.justification]);
   r.whys.forEach((w,i) => f.push(['Why #' + (i+1), w]));
   s.actions.forEach(a => { f.push(['Action', a.action]); f.push(['Action owner', a.owner]); });
   f.push(['What went well', s.coaching.well], ['What to fix', s.coaching.fix], ['Tip for next call', s.coaching.tip]);
@@ -507,62 +673,62 @@ function piiScan(s){
   piiFields(s).forEach(([l, v]) => { if (hasPII(v) && !bad.includes(l)) bad.push(l); });
   return bad;
 }
-
+function actionFor(c){
+  if (c.l1 === 'PEOPLE' && c.lens && LENS_ACTION[c.lens]) return LENS_ACTION[c.lens];
+  return L2_ACTION[c.l2] || L1_ACTION[c.l1] || {action:'Follow-up', owner:'Mentor'};
+}
 function suggestActions(s){
-  const {p, sec} = causeTypes(s), r = s.rca, out = [];
-  const due = addDays(today(), 7);
-  const add = (role, type, sub) => {
-    const m = ACTION_MAP[sub]; if (!m) return;
-    out.push({id: uid(), role, cause: type + ' - ' + sub, action: m.action, owner: m.owner, due, status:'Open', auto:true});
-  };
-  if (gate1(s).state === 'valid') {
-    if (p && r.pSub) add('Primary', p, r.pSub);
-    if (sec && r.sSub) add('Secondary', sec, r.sSub);
-  }
+  const out = [], due = addDays(today(), 7);
+  [['Primary', primaryCause(s)], ['Secondary', secondaryCause(s)]].forEach(([role, c]) => {
+    if (!c) return;
+    const m = actionFor(c);
+    out.push({id: uid(), role, cause: c.l1 + ' > ' + c.l2 + (c.lens ? ' (' + c.lens + ')' : ''), action: m.action, owner: m.owner, due, status:'Open', auto:true});
+  });
   return out;
 }
-const actionsKey = s => { const {p, sec} = causeTypes(s); return gate1(s).state + '|' + p + '|' + s.rca.pSub + '|' + sec + '|' + s.rca.sSub; };
+const actionsKey = s => { const p = primaryCause(s), c = secondaryCause(s); return JSON.stringify([p && [keyOf(p), p.lens], c && [keyOf(c), c.lens]]); };
 function ensureActions(s){
   const key = actionsKey(s);
-  if (key !== s.actionsKey && !s.actions.some(a => a.edited || !a.auto)) {
-    s.actions = suggestActions(s); s.actionsKey = key;
-  }
+  if (key !== s.actionsKey && !s.actions.some(a => a.edited || !a.auto)) { s.actions = suggestActions(s); s.actionsKey = key; }
 }
-function personCause(s){
-  const {p, sec} = causeTypes(s), r = s.rca;
-  if (gate1(s).state !== 'valid') return null;
-  if (p === 'Person' && r.pSub) return {sub: r.pSub, explain: r.pExplain, ev: liveEvidence(s, r.pEvidence)};
-  if (sec === 'Person' && r.sSub) return {sub: r.sSub, explain: r.sExplain, ev: liveEvidence(s, r.sEvidence)};
+function peopleCause(s){
+  const p = primaryCause(s), c = secondaryCause(s);
+  if (p && p.l1 === 'PEOPLE') return p;
+  if (c && c.l1 === 'PEOPLE') return c;
   return null;
 }
 function coachingDefaults(s){
-  const pc = personCause(s);
+  const pc = peopleCause(s);
   const pos = s.events.filter(e => e.positive).map(e => e.ts + ' ' + evLabel(e));
-  const fixParts = [];
+  const fix = [];
   if (pc) {
-    if (pc.explain) fixParts.push(pc.explain);
-    const ev = pc.ev.map(id => evById(s, id)).filter(Boolean).map(e => e.ts + ' ' + evLabel(e));
-    if (ev.length) fixParts.push('See ' + ev.join('; '));
+    fix.push(pc.l3 + (pc.explain ? ' - ' + pc.explain : ''));
+    const ev = pc.evidence.map(id => evById(s, id)).filter(Boolean).map(e => e.ts + ' ' + evLabel(e));
+    if (ev.length) fix.push('See ' + ev.join('; '));
   }
-  return {well: pos.join('; '), fix: fixParts.join('. '), tip: pc ? (TIPS[pc.sub] || '') : ''};
+  return {well: pos.join('; '), fix: fix.join('. '), tip: pc ? (TIPS_LENS[pc.lens] || TIPS_L2[pc.l2] || '') : ''};
+}
+function trackerValues(s){
+  const p = primaryCause(s);
+  return [[H_L1, p ? p.l1 : ''], [H_L2, p ? p.l2 : ''], [H_L3, p ? p.l3 : ''], [H_L4, p ? p.l4 : '']];
 }
 function summaryText(s){
-  const L = [], r = s.rca, g = gate1(s), v = verifResult(s), {p, sec} = causeTypes(s);
+  const L = [], r = s.rca, g = gate1(s), v = verifResult(s), p = primaryCause(s), c = secondaryCause(s);
   L.push('Call ref: ' + (s.callRef || '-') + ' | Advocate: ' + (s.advocate || '-') + ' | Date: ' + (s.date || '-') + (s.callLength ? ' | Length: ' + s.callLength : ''));
   L.push('DSAT: ' + (s.comment || '-'));
-  if (g.state === 'nc') L.push('Valid: No (Non-controllable - ' + (r.ncReason || 'reason not chosen') + (r.ncNote ? ': ' + r.ncNote : '') + '; ' + g.why + ')');
-  else if (g.state === 'valid') L.push('Valid: Yes (about this call, rating the service' + (g.review ? '; correct outcome given but customer still unhappy - FLAGGED FOR REVIEW' : '') + ')');
-  else L.push('Valid: Not decided yet');
+  if (g.state === 'invalid') L.push('Survey valid: No (' + g.why + (r.ncNote ? ': ' + r.ncNote : '') + ')');
+  else if (g.state === 'valid') L.push('Survey valid: Yes' + (g.review ? ' (correct outcome given but customer still unhappy - FLAGGED FOR REVIEW)' : ''));
+  else L.push('Survey valid: Not decided yet');
   L.push('Verification: ' + v.code + ' (' + verifDetail(s) + ')');
-  let evIds = [];
-  if (g.state === 'valid') {
-    L.push('Primary: ' + (p ? p + ' - ' + (r.pSub || '?') + (r.pExplain ? ': ' + r.pExplain : '') : 'Not decided'));
-    L.push('Secondary: ' + (sec ? sec + ' - ' + (r.sSub || '?') + (r.sExplain ? ': ' + r.sExplain : '') : 'None'));
-    if (hasVerifMiss(s) && p === 'Process' && r.justification) L.push('Verification miss justification: ' + r.justification);
-    evIds = liveEvidence(s, r.pEvidence).concat(liveEvidence(s, r.sEvidence).filter(id => !r.pEvidence.includes(id)));
-  } else {
-    evIds = s.events.map(e => e.id);
-  }
+  L.push(H_L1 + ': ' + (p ? p.l1 : '-'));
+  L.push(H_L2 + ': ' + (p ? p.l2 : '-'));
+  L.push(H_L3 + ': ' + (p ? p.l3 : '-'));
+  L.push(H_L4 + ': ' + (p ? p.l4 : '-'));
+  if (p && p.lens) L.push('Why (coaching lens): ' + p.lens);
+  if (p && p.explain && g.state === 'valid') L.push('Explanation: ' + p.explain);
+  if (g.state === 'valid') L.push('Secondary: ' + (c ? c.l1 + ' > ' + c.l2 + ' > ' + c.l3 + ' (' + c.l4 + ')' + (c.lens ? ' [' + c.lens + ']' : '') + (c.explain ? ' - ' + c.explain : '') : 'None'));
+  if (hasVerifMiss(s) && g.state === 'valid' && p && p.l4 === NCTRL && r.justification) L.push('Verification miss justification: ' + r.justification);
+  let evIds = g.state === 'valid' ? liveEvidence(s, r.pEvidence).concat(liveEvidence(s, r.sEvidence).filter(id => !r.pEvidence.includes(id))) : s.events.map(e => e.id);
   const evs = evIds.map(id => evById(s, id)).filter(Boolean).sort((a,b) => tsSec(a.ts) - tsSec(b.ts));
   L.push('Evidence: ' + (evs.length ? evs.map(evText).join('; ') : 'None'));
   const whys = r.whys.map(w => w.trim()).filter(Boolean);
@@ -571,12 +737,29 @@ function summaryText(s){
   return L.join('\n');
 }
 function coachingText(s){
-  const c = s.coaching, pc = personCause(s);
-  return 'Coaching note - ' + (s.advocate || 'Advocate') + ' (' + (s.date || '') + (s.callRef ? ', ' + s.callRef : '') + ')' + (pc ? ' - Focus: ' + pc.sub : '') + '\n' +
+  const c = s.coaching, pc = peopleCause(s);
+  return 'Coaching note - ' + (s.advocate || 'Advocate') + ' (' + (s.date || '') + (s.callRef ? ', ' + s.callRef : '') + ')' + (pc ? '\nFocus: ' + pc.l2 + ' - ' + pc.l3 + (pc.lens ? ' [' + pc.lens + ']' : '') : '') + '\n' +
     'What went well: ' + (c.well || '-') + '\n' +
     'What to fix: ' + (c.fix || '-') + '\n' +
     'Tip for next call: ' + (c.tip || '-');
 }
+
+/* ================= Export columns (tracker-first) ================= */
+const LOG_COLS = ['Date','Advocate','Call reference ID','Call length','DSAT comment (paraphrased)', H_L1, H_L2, H_L3, H_L4,
+  'Explanation','Coaching lens','Secondary L1','Secondary L2','Secondary L3','Secondary L4','Survey valid','Flagged for review',
+  'Verification','Verification detail','Verification justification','Evidence','5 Whys','Actions'];
+function logRow(s){
+  const g = gate1(s), r = s.rca, p = primaryCause(s) || {}, c = secondaryCause(s) || {};
+  const evIds = g.state === 'valid' ? liveEvidence(s, r.pEvidence).concat(liveEvidence(s, r.sEvidence).filter(id => !r.pEvidence.includes(id))) : [];
+  return [s.date, s.advocate, s.callRef, s.callLength, s.comment, p.l1 || '', p.l2 || '', p.l3 || '', p.l4 || '',
+    p.explain || '', p.lens || '', c.l1 || '', c.l2 || '', c.l3 || '', c.l4 || '',
+    g.state === 'valid' ? 'Yes' : g.state === 'invalid' ? 'No' : '', g.state === 'valid' && g.review ? 'Yes' : '',
+    verifResult(s).code, verifDetail(s), (p.l4 === NCTRL && hasVerifMiss(s)) ? r.justification : '',
+    evIds.map(id => evById(s, id)).filter(Boolean).map(evText).join('; '),
+    r.whys.filter(Boolean).join(' | '),
+    s.actions.map(a => a.action + ' (' + a.owner + ', ' + a.due + ', ' + a.status + ')').join(' | ')];
+}
+const tsvCell = v => String(v == null ? '' : v).replace(/[\t\r\n]+/g, ' ');
 
 /* ================= Render helpers ================= */
 const piiMsgHTML = '<div class="pii-msg">&#9888; This looks like an account or ID number (6+ digits in a row). Remove it. Saving is blocked.</div>';
@@ -592,26 +775,26 @@ function area(bind, val, o){
   return '<textarea' + attrs(Object.assign({'data-bind': bind, 'class': (o.cls || '') + (bad ? ' pii-bad' : '')}, o.a)) + '>' + esc(val || '') + '</textarea>' + (bad ? piiMsgHTML : '');
 }
 const tipBtn = (t, label) => '<button type="button" class="tip" data-tip="' + esc(t) + '" aria-label="' + esc('Help: ' + (label || '')) + '">?</button>';
-function optCard(act, v, sel, title, desc, tip, extra){
-  return '<div class="opt' + (sel ? ' sel' : '') + '" role="button" tabindex="0" aria-pressed="' + (sel ? 'true' : 'false') + '" data-act="' + act + '" data-v="' + esc(v) + '">' +
+function optCard(act, v, sel, title, desc, tip, extra, cls, slot){
+  return '<div class="opt' + (sel ? ' sel' : '') + (cls ? ' ' + cls : '') + '" role="button" tabindex="0" aria-pressed="' + (sel ? 'true' : 'false') + '" data-act="' + act + '" data-v="' + esc(v) + '"' + (slot ? ' data-i="' + slot + '"' : '') + '>' +
     '<div class="t">' + esc(title) + '</div>' + (desc ? '<div class="d">' + esc(desc) + '</div>' : '') + (extra || '') + tipBtn(tip, title) + '</div>';
 }
-function classBadge(s){
-  const c = rcaClass(s);
-  const cls = c === 'Person' ? 'person' : c === 'Process' ? 'process' : c === 'Non-controllable' ? 'nc' : '';
-  let t = c;
-  if (c === 'Person' || c === 'Process') t += ' - ' + s.rca.pSub;
-  if (c === 'Non-controllable' && s.rca.ncReason) t += ' - ' + s.rca.ncReason;
-  return '<span class="badge ' + cls + '">' + esc(t) + '</span>';
+function rcaBadges(s){
+  const p = primaryCause(s);
+  if (!p) return '<span class="badge">RCA not finished</span>';
+  return l1Badge(p.l1) + ' ' + l4Badge(p.l4) + ' <span class="small">' + esc(p.l2 + ' > ' + p.l3) + '</span>';
 }
 function verifBadge(s){ const v = verifResult(s); return '<span class="badge ' + (v.cls === 'none' ? '' : v.cls) + '">Verif: ' + esc(v.code) + '</span>'; }
-function driverOptions(sel, allowPositive){
-  const list = DB.settings.drivers.slice();
-  if (sel && !list.includes(sel)) list.push(sel);
-  return '<option value="">' + (allowPositive ? '- No driver -' : '- Choose driver -') + '</option>' + list.map(d => '<option' + (d === sel ? ' selected' : '') + '>' + esc(d) + '</option>').join('');
+function tagOptions(sel){
+  let h = '<option value="">- No tag -</option>';
+  if (sel && !findRow(sel)) h += '<option value="' + esc(sel) + '" selected>(not in framework) ' + esc(tagShort(sel)) + '</option>';
+  l1List().forEach(l1 => l2List(l1).forEach(l2 => {
+    h += '<optgroup label="' + esc(l1 + ' > ' + l2) + '">' + l3List(l1, l2).map(r => '<option value="' + esc(keyOf(r)) + '"' + (keyOf(r) === sel ? ' selected' : '') + '>' + esc(r.l3) + '</option>').join('') + '</optgroup>';
+  }));
+  return h;
 }
 
-/* ================= Render: wizard ================= */
+/* ================= Render ================= */
 function render(){
   const fk = focusKey();
   document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.v === view ? 'page' : 'false'));
@@ -623,13 +806,14 @@ function render(){
   $('#foot').innerHTML = view === 'scrub' ? renderFooter() : '';
   if (view === 'scrub') updatePiiBar();
   if (view === 'history') renderHistList();
+  if (view === 'settings') renderFwList();
   restoreFocus(fk);
   showStorageWarn();
 }
 function focusKey(){
   const a = document.activeElement;
   if (!a || a === document.body) return null;
-  const keys = ['data-act','data-v','data-id','data-i','data-bind','data-ui','data-sbind','data-filt'];
+  const keys = ['data-act','data-v','data-id','data-i','data-bind','data-ui','data-sbind','data-filt','data-fw'];
   const sel = keys.filter(k => a.hasAttribute(k)).map(k => '[' + k + '="' + CSS.escape(a.getAttribute(k)) + '"]').join('');
   return sel || (a.id ? '#' + CSS.escape(a.id) : null);
 }
@@ -637,7 +821,9 @@ function restoreFocus(sel){ if (!sel) return; try { const el = document.querySel
 
 function renderWizard(){
   const pct = Math.round(step / 6 * 100);
-  let h = '<div class="row" style="margin-bottom:10px"><h1 class="grow" style="font-size:1.3rem;margin:0">' +
+  let h = '';
+  if (migratedMsg) h += '<div class="notice info">' + esc(migratedMsg) + ' <button class="btn sm" data-act="dismissMig">OK</button></div>';
+  h += '<div class="row" style="margin-bottom:10px"><h1 class="grow" style="font-size:1.3rem;margin:0">' +
     (DB.scrubs.some(x => x.id === cur.id) ? 'Editing scrub' : 'New scrub') +
     (cur.callRef ? ' <span class="muted small">' + esc(cur.callRef) + '</span>' : '') + '</h1>' +
     '<button class="btn sm" data-act="newScrub">+ Start new scrub</button></div>';
@@ -648,14 +834,12 @@ function renderWizard(){
   return h;
 }
 function renderFooter(){
-  const nc = gate1(cur).state === 'nc';
-  return '<div class="wfoot"><div class="wrap">' +
-    '<div id="piiBar"></div>' +
-    '<button class="btn" data-act="back"' + (step === 1 ? ' disabled' : '') + '>&larr; Back</button>' +
-    '<span class="sp"></span>' +
+  const inv = gate1(cur).state === 'invalid';
+  return '<div class="wfoot"><div class="wrap"><div id="piiBar"></div>' +
+    '<button class="btn" data-act="back"' + (step === 1 ? ' disabled' : '') + '>&larr; Back</button><span class="sp"></span>' +
     '<button class="btn" data-act="saveDraft">Save draft</button>' +
-    (step < 6 ? '<button class="btn primary" data-act="next">' + (step === 4 && nc ? 'Skip to Summary &rarr;' : 'Next &rarr;') + '</button>'
-              : '<button class="btn primary" data-act="finish">&#10003; Finish &amp; save</button>') +
+    (step < 6 ? '<button class="btn primary" data-act="next">' + (step === 4 && inv ? 'Skip to Summary &rarr;' : 'Next &rarr;') + '</button>'
+              : '<button class="btn primary" data-act="finish">&#10003; <span class="hide-sm">Finish &amp; save</span><span class="show-sm">Finish</span></button>') +
     '</div></div>';
 }
 function updatePiiBar(){
@@ -668,8 +852,7 @@ function step1(){
   const advs = DB.settings.advocates.slice();
   if (cur.advocate && !advs.includes(cur.advocate)) advs.unshift(cur.advocate);
   let h = '<div class="card"><h2>Step 1: Call info</h2><p class="muted small">Only these fields are allowed. Never type customer names, account or card numbers.</p>';
-  h += '<label class="f" for="advSel">Advocate name</label>';
-  h += '<select id="advSel"><option value="">- Choose advocate -</option>' +
+  h += '<label class="f" for="advSel">Advocate name</label><select id="advSel"><option value="">- Choose advocate -</option>' +
     advs.map(a => '<option' + (a === cur.advocate ? ' selected' : '') + '>' + esc(a) + '</option>').join('') +
     '<option value="__new"' + (ui.addingAdv ? ' selected' : '') + '>+ Add new advocate...</option></select>';
   if (ui.addingAdv) {
@@ -682,15 +865,14 @@ function step1(){
     '<div><label class="f" for="f_len">Call length <span class="hint">(mm:ss)</span></label>' + txt('callLength', cur.callLength, {a:{id:'f_len', placeholder:'12:30', inputmode:'numeric'}}) + '</div></div>';
   h += '<label class="f" for="f_com">DSAT survey comment <span class="hint">(paraphrased, no names or numbers)</span></label>' +
     area('comment', cur.comment, {a:{id:'f_com', placeholder:'e.g. Customer said they were on hold too long and the issue is still not fixed.'}});
-  h += '</div>';
-  return h;
+  return h + '</div>';
 }
 
 function step2(){
   const r = verifResult(cur);
   let h = '<div class="card"><h2>Step 2: Verification check</h2>';
   h += '<div class="result-big ' + r.cls + '" id="vResult">' + (r.code === 'FAIL' ? 'FAIL - Compliance fail' : esc(r.code)) + '<div class="small" style="font-weight:600">' + esc(r.code === 'FAIL' ? 'A critical step was missed. ' + verifDetail(cur) : r.label) + '</div></div>';
-  h += '<p class="muted small">Tap a result for each step. Tap again to clear. <b>Critical</b> steps marked Missed = FAIL. Any step late, out of order, or a non-critical miss = PARTIAL.</p>';
+  h += '<p class="muted small">Tap a result for each step. Tap again to clear. <b>Critical</b> step Missed = FAIL. Any step late, out of order, or a non-critical miss = PARTIAL.</p>';
   h += '<div class="row" style="margin-bottom:10px"><button class="btn sm" data-act="allDone">Mark all Done</button><button class="btn sm" data-act="reloadSteps">Reload steps from Settings</button><button class="btn sm" data-act="view" data-v="settings">Edit steps in Settings</button></div>';
   if (!cur.verif.length) h += '<div class="notice warn">No verification steps. Add your site\'s steps in Settings.</div>';
   cur.verif.forEach((v,i) => {
@@ -699,34 +881,33 @@ function step2(){
       VSTATUS.map(s => '<button class="' + s.cls + (v.status === s.k ? ' sel' : '') + '" data-act="vstat" data-i="' + i + '" data-v="' + s.k + '" aria-pressed="' + (v.status === s.k) + '">' + s.label + '</button>').join('') +
       '</div><div><label class="sr" for="vts' + i + '">Time</label>' + txt('verif.' + i + '.ts', v.ts, {cls:'ts', a:{id:'vts' + i, placeholder:'mm:ss (optional)', inputmode:'numeric', 'data-rr':'1'}}) + '</div></div></div>';
   });
-  h += '</div>';
-  return h;
+  if (hasVerifMiss(cur)) h += '<div class="notice warn">A step was missed. In the RCA this defaults to ' + l1Badge('PEOPLE') + ' &gt; Process Adherence &gt; "Failed to complete or request authentication when appropriate".</div>';
+  return h + '</div>';
 }
 
 function step3(){
   const e = ui.ev;
-  let h = '<div class="card"><h2>Step 3: Timeline of what went wrong</h2><p class="muted small">Pause the recording, type the time you see in the player, tap a chip and/or write a short note.</p>';
-  h += '<div class="row"><div style="flex:0 0 120px"><label class="f" for="evTs">Time (mm:ss)</label><input type="text" id="evTs" data-ui="ts" value="' + esc(e.ts) + '" placeholder="03:15" inputmode="numeric" autocomplete="off"></div>' +
-    '<div class="grow"><label class="f" for="evDriver">DSAT driver</label><select id="evDriver" data-ui="driver">' + driverOptions(e.driver, CHIPS.some(c => c.positive && c.label === e.chip)) + '</select></div></div>';
+  let h = '<div class="card"><h2>Step 3: Timeline of what went wrong</h2><p class="muted small">Pause the recording, type the time you see in the player, tap a chip and/or write a note. Chips pre-fill the matching RCA Matrix tag (L1 &gt; L2 &gt; L3), which you can change.</p>';
+  h += '<div class="row"><div style="flex:0 0 120px"><label class="f" for="evTs">Time (mm:ss)</label><input type="text" id="evTs" data-ui="ts" value="' + esc(e.ts) + '" placeholder="03:15" inputmode="numeric" autocomplete="off"></div></div>';
   h += '<label class="f">Quick chips</label><div class="chips">' + CHIPS.map(c => '<button class="chip' + (c.positive ? ' pos' : '') + (e.chip === c.label ? ' sel' : '') + '" data-act="chip" data-v="' + esc(c.label) + '" aria-pressed="' + (e.chip === c.label) + '">' + esc(c.label + (c.positive ? ' (positive)' : '')) + '</button>').join('') + '</div>';
   const bad = hasPII(e.note);
   h += '<label class="f" for="evNote">Note <span class="hint">(optional if a chip is picked)</span></label><input type="text" id="evNote" data-ui="note" class="' + (bad ? 'pii-bad' : '') + '" value="' + esc(e.note) + '" placeholder="What happened? (no customer details)" autocomplete="off">' + (bad ? piiMsgHTML : '');
+  const pos = CHIPS.some(c => c.positive && c.label === e.chip);
+  h += '<label class="f" for="evTag">RCA Matrix tag <span class="hint">(L1 &gt; L2 &gt; L3, optional)</span></label><select id="evTag" data-ui="tag"' + (pos ? ' disabled' : '') + '>' + tagOptions(e.tag) + '</select>';
   if (ui.evErr) h += '<div class="notice bad">' + esc(ui.evErr) + '</div>';
   h += '<div style="margin-top:10px"><button class="btn primary" data-act="addEvent">+ Add event</button></div></div>';
 
   h += '<div class="card"><h2>Events (' + cur.events.length + ')</h2>';
   if (!cur.events.length) h += '<p class="muted">No events yet.</p>';
   sortedEvents(cur).forEach(ev => {
-    const i = cur.events.indexOf(ev);
-    const badTs = !normTs(ev.ts);
-    h += '<div class="ev ' + (ev.positive ? 'pos' : 'neg') + '"><div>' + txt('events.' + i + '.ts', ev.ts, {cls: badTs ? 'pii-bad' : '', a:{'aria-label':'Event time', 'data-rr':'1', inputmode:'numeric'}}) + '</div>' +
-      '<div class="evbody"><div class="evlbl">' + (ev.chip ? esc(ev.chip) : '') + (ev.positive ? ' <span class="badge ok">Positive</span>' : '') + '</div>' +
+    const i = cur.events.indexOf(ev), t = parseKey(ev.tag);
+    h += '<div class="ev ' + (ev.positive ? 'pos' : 'neg') + '"><div>' + txt('events.' + i + '.ts', ev.ts, {cls: normTs(ev.ts) ? '' : 'pii-bad', a:{'aria-label':'Event time', 'data-rr':'1', inputmode:'numeric'}}) + '</div>' +
+      '<div class="evbody"><div class="evlbl">' + (ev.chip ? esc(ev.chip) : '') + (ev.positive ? ' <span class="badge ok">Positive</span>' : (ev.tag ? ' ' + l1Badge(t.l1) : '')) + '</div>' +
       txt('events.' + i + '.note', ev.note, {a:{'aria-label':'Event note', placeholder:'Note'}}) +
-      '<div class="evctl"><select data-bind="events.' + i + '.driver" aria-label="DSAT driver"' + (ev.positive ? ' disabled' : '') + '>' + driverOptions(ev.driver, ev.positive) + '</select>' +
+      '<div class="evctl">' + (ev.positive ? '' : '<select data-bind="events.' + i + '.tag" aria-label="RCA Matrix tag">' + tagOptions(ev.tag) + '</select>') +
       '<button class="btn sm danger" data-act="delEvent" data-id="' + ev.id + '">Delete</button></div></div></div>';
   });
-  h += '</div>';
-  return h;
+  return h + '</div>';
 }
 
 function ynRow(key, val){
@@ -734,60 +915,81 @@ function ynRow(key, val){
   return '<div class="q-row"><div class="qt">' + esc(q.text) + ' ' + tipBtn(q.tip, q.text) + '</div><div class="seg" role="group">' +
     ['yes','no'].map(v => '<button class="' + (val === v ? 'sel' : '') + '" data-act="gq" data-i="' + key + '" data-v="' + v + '" aria-pressed="' + (val === v) + '">' + (v === 'yes' ? 'Yes' : 'No') + '</button>').join('') + '</div></div>';
 }
-function evidenceList(role, list){
+function evidenceList(slot, list, cause){
   if (!cur.events.length) return '<div class="notice warn">No timeline events yet. <button class="btn sm" data-act="goto" data-v="3">Add events in Step 3</button></div>';
   return sortedEvents(cur).map(e => {
-    const on = list.includes(e.id);
-    return '<button class="chk' + (on ? ' on' : '') + '" data-act="evid" data-i="' + role + '" data-id="' + e.id + '" aria-pressed="' + on + '"><span class="box">' + (on ? '&#10003;' : '') + '</span><span><b>' + esc(e.ts) + '</b> ' + esc(evLabel(e)) + ' <span class="muted small">' + esc(e.positive ? '[positive]' : e.driver ? '[' + e.driver + ']' : '') + '</span></span></button>';
+    const on = list.includes(e.id), t = parseKey(e.tag);
+    const match = cause && cause.l2 && t.l1 === cause.l1 && t.l2 === cause.l2 ? (t.l3 === cause.l3 ? 'matches L3' : 'matches L2') : '';
+    return '<button class="chk' + (on ? ' on' : '') + '" data-act="evid" data-i="' + slot + '" data-id="' + e.id + '" aria-pressed="' + on + '"><span class="box">' + (on ? '&#10003;' : '') + '</span><span><b>' + esc(e.ts) + '</b> ' + esc(evLabel(e)) +
+      (e.positive ? ' <span class="muted small">[positive]</span>' : '') + (match ? ' <span class="match">&#9679; ' + match + '</span>' : '') + (e.tag ? '<br><span class="muted small">' + esc(tagShort(e.tag)) + '</span>' : '') + '</span></button>';
   }).join('');
 }
-function subCards(act, type, sel){
-  return '<div class="opts">' + SUBS[type].map(s => optCard(act, s.k, sel === s.k, s.k, s.d, s.tip, '<div class="q">Ask: ' + esc(s.q) + '</div>')).join('') + '</div>';
+function causePicker(slot, side){
+  const r = cur.rca, c = r[slot], allowed = allowedL1(side), lensKey = slot + 'Lens';
+  let h = '';
+  // suggestions from timeline tags
+  const tally = {};
+  cur.events.forEach(e => { if (!e.positive && e.tag && findRow(e.tag) && allowed.includes(parseKey(e.tag).l1)) tally[e.tag] = (tally[e.tag] || 0) + 1; });
+  const top = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
+  if (top.length) h += '<div class="small muted">Suggested from your timeline tags:</div><div class="sugg">' + top.map(([k,n]) => { const p = parseKey(k); return '<button data-act="useTag" data-i="' + slot + '" data-v="' + esc(k) + '">' + (k === keyOf(c) ? '&#10003; ' : 'Use: ') + esc(p.l1 + ' > ' + p.l2 + ' > ' + p.l3) + ' <b>(' + n + ')</b></button>'; }).join('') + '</div>';
+  if (allowed.length === 1 && c.l1 !== allowed[0]) { c.l1 = allowed[0]; c.l2 = ''; c.l3 = ''; }
+  if (allowed.length > 1) {
+    h += '<h3>' + H_L1 + '</h3><div class="opts">' + allowed.map(l1 => optCard('pickL1', l1, c.l1 === l1, l1, l2List(l1).length + ' categories', (L1_INFO[l1] || {}).tip || 'Primary driver from your framework.', '', l1Cls(l1), slot)).join('') + '</div>';
+  }
+  if (c.l1) {
+    h += '<h3>' + H_L2 + '</h3><div class="opts">' + l2List(c.l1).map(l2 => optCard('pickL2', l2, c.l2 === l2, l2, '', l2Tip(l2), l2Ask(l2) ? '<div class="q">Ask: ' + esc(l2Ask(l2)) + '</div>' : '', l1Cls(c.l1), slot)).join('') + '</div>';
+  }
+  if (c.l1 && c.l2) {
+    h += '<h3>' + H_L3 + '</h3><div class="opts one">' + l3List(c.l1, c.l2).map(row => optCard('pickL3', row.l3, c.l3 === row.l3, row.l3, row.l4, c.l1 + ' > ' + c.l2 + ' (' + row.l4 + '). ' + l2Tip(c.l2), '', '', slot)).join('') + '</div>';
+  }
+  if (causeDone(c)) {
+    h += '<div class="notice ok" style="color:var(--text)">Tracker: ' + l1Badge(c.l1) + ' &gt; <b>' + esc(c.l2) + '</b> &gt; ' + esc(c.l3) + ' ' + l4Badge(l4For(c)) + '</div>';
+  }
+  if (c.l1 === 'PEOPLE') {
+    h += '<h3>Why did it happen? <span class="muted small">(coaching lens, optional, picks the coaching action)</span></h3><div class="opts">' +
+      LENS.map(l => optCard('pickLens', l.k, r[lensKey] === l.k, l.k, l.d, l.tip, '<div class="q">Ask: ' + esc(l.q) + '</div>', '', slot)).join('') + '</div>';
+  }
+  return h;
 }
 function step4(){
   const r = cur.rca, g = gate1(cur);
-  let h = '<div class="card"><h2>Gate 1: Is the DSAT valid?</h2>';
+  let h = '';
+  if (r.legacy) h += '<div class="notice info"><b>From the old version:</b> ' + esc(r.legacy) + '<br>Re-pick the RCA below using the ' + esc(DB.settings.frameworkName) + '.</div>';
+  h += '<div class="card"><h2>Gate 1: Survey validation</h2>';
   h += ynRow('q1', r.q1);
   if (r.q1 === 'yes') h += ynRow('q2', r.q2);
-  if (r.q1 === 'yes' && r.q2 === 'no') h += ynRow('q3', r.q3);
+  if (r.q1 === 'yes' && r.q2 === 'yes') h += ynRow('q3', r.q3);
   if (g.state === 'valid') {
-    h += '<div class="notice ok">&#10003; DSAT is valid. Continue to Gate 2.</div>';
-    if (g.review) h += '<div class="notice warn">&#9873; Flagged for review: correct outcome was given but the customer is still unhappy. Ask a reviewer to double-check validity.</div>';
+    h += '<div class="notice ok">&#10003; Survey is valid. Continue to Gate 2.</div>';
+    if (g.review) h += '<div class="notice warn">&#9873; Flagged for review: correct outcome was given but the customer is still unhappy. This often ends up POLICY or PROCESS.</div>';
   }
-  if (g.state === 'nc') {
-    h += '<div class="notice info"><b>Non-controllable.</b> ' + esc(g.why) + '. Pick a reason, then skip to the Summary.</div>';
-    h += '<h3>Non-controllable reason</h3><div class="opts">' + NC_REASONS.map(n => optCard('ncReason', n.k, r.ncReason === n.k, n.k + (g.suggest === n.k ? ' (suggested)' : ''), '', n.tip)).join('') + '</div>';
-    h += '<label class="f" for="f_ncn">Short note <span class="hint">(optional)</span></label>' + txt('rca.ncNote', r.ncNote, {a:{id:'f_ncn', placeholder:'e.g. Overdraft fee correctly applied per policy'}});
+  if (g.state === 'invalid') {
+    h += '<div class="notice info"><b>Survey not valid:</b> ' + esc(g.why) + '. Pick the matching row, then skip to the Summary.</div>';
+    h += '<div class="opts one">' + invalidOptions().map(row => optCard('invalidKey', keyOf(row), r.invalidKey === keyOf(row), row.l3, row.l1 + ' > ' + row.l2 + ' | ' + row.l4 + (g.suggest === keyOf(row) ? ' | suggested' : ''), l2Tip(row.l2), '', l1Cls(row.l1))).join('') + '</div>';
+    h += '<label class="f" for="f_ncn">Short note <span class="hint">(optional)</span></label>' + txt('rca.ncNote', r.ncNote, {a:{id:'f_ncn', placeholder:'e.g. Comment praises the advocate but score is 1'}});
+    if (hasVerifMiss(cur)) h += '<div class="notice warn">Note: a verification step was still missed on this call. It stays in the Verification result.</div>';
     h += '<div style="margin-top:10px"><button class="btn primary" data-act="goto" data-v="6">Skip to Summary &rarr;</button></div>';
   }
   h += '</div>';
 
   if (g.state === 'valid') {
-    const {p, sec} = causeTypes(cur);
-    const miss = hasVerifMiss(cur);
+    const {p, sec} = sides(cur), miss = hasVerifMiss(cur);
     h += '<div class="card"><h2>Gate 2: Would a fully trained, motivated advocate have avoided this DSAT?</h2>';
-    if (miss) h += '<div class="notice warn">&#9888; A verification step was missed (' + esc(cur.verif.filter(v => v.status === 'missed').map(v => v.name).join(', ')) + '). This defaults to <b>Person</b> unless you choose Procedure gap or System and write a justification.</div>';
+    if (miss) h += '<div class="notice warn">&#9888; A verification step was missed (' + esc(cur.verif.filter(v => v.status === 'missed').map(v => v.name).join(', ')) + '). This defaults to <b>PEOPLE</b> unless you choose PROCESS &gt; Workflow / Content / Support Tools or PRODUCT &gt; Flagstar Outage and write a justification.</div>';
     h += '<div class="opts">' + G2.map(o => optCard('g2', o.k, r.g2 === o.k, o.t, o.d, o.tip)).join('') + '</div>';
-    if (r.g2 === 'partly') {
-      h += '<h3>Which cause is Primary?</h3><div class="opts">' + ['Person','Process'].map(t => optCard('ptype', t, r.primaryType === t, t + ' is Primary', 'Secondary will be ' + other(t), TYPE_TIPS[t])).join('') + '</div>';
-    }
+    if (r.g2 === 'partly') h += '<h3>Which is Primary? <span class="muted small">(goes into your tracker)</span></h3><div class="opts">' +
+      [['people','PEOPLE is Primary','Secondary: PROCESS / POLICY / PRODUCT'], ['nc','PROCESS / POLICY / PRODUCT is Primary','Secondary: PEOPLE']].map(([k,t,d]) => optCard('pside', k, r.primarySide === k, t, d, SIDE_TIPS[k])).join('') + '</div>';
     h += '</div>';
     if (p) {
-      h += '<div class="card"><h2>Gate 3: Primary cause - ' + esc(p) + '</h2><p class="muted small">Pick the sub-cause. Use the "Ask" question to test it.</p>';
-      h += subCards('psub', p, r.pSub);
-      h += '<label class="f" for="f_pex">Short explanation</label>' + txt('rca.pExplain', r.pExplain, {a:{id:'f_pex', placeholder:'e.g. Did not know the dispute timeline, gave wrong info'}});
-      if (miss && p === 'Process') {
-        h += '<label class="f" for="f_just">Justification: why is the verification miss a Process cause? <span class="hint">(required)</span></label>' + area('rca.justification', r.justification, {a:{id:'f_just', placeholder:'e.g. KB shows two conflicting verification flows for this call type'}});
-      }
-      h += '<h3 style="margin-top:14px">Evidence for Primary <span class="muted small">(link at least one timestamp)</span></h3>' + evidenceList('p', r.pEvidence);
-      h += '</div>';
+      h += '<div class="card"><h2>Gate 3: Primary cause</h2><p class="muted small">Pick L1 &gt; L2 &gt; L3 exactly as in the ' + esc(DB.settings.frameworkName) + '. L4 fills itself.</p>' + causePicker('p', p);
+      h += '<label class="f" for="f_pex">Short explanation</label>' + txt('rca.pExplain', r.pExplain, {a:{id:'f_pex', placeholder:'e.g. Told customer the dispute closes in 2 days'}});
+      if (miss && p === 'nc') h += '<label class="f" for="f_just">Justification: why is the verification miss Non Controllable? <span class="hint">(required)</span></label>' + area('rca.justification', r.justification, {a:{id:'f_just', placeholder:'e.g. KB shows two conflicting verification flows for this call type'}});
+      h += '<h3>Evidence for Primary <span class="muted small">(link at least one timestamp)</span></h3>' + evidenceList('p', r.pEvidence, r.p) + '</div>';
     }
     if (sec) {
-      h += '<div class="card"><h2>Secondary cause - ' + esc(sec) + '</h2>';
-      h += subCards('ssub', sec, r.sSub);
+      h += '<div class="card"><h2>Secondary cause</h2>' + causePicker('s', sec);
       h += '<label class="f" for="f_sex">Short explanation</label>' + txt('rca.sExplain', r.sExplain, {a:{id:'f_sex'}});
-      h += '<h3 style="margin-top:14px">Evidence for Secondary <span class="muted small">(optional)</span></h3>' + evidenceList('s', r.sEvidence);
-      h += '</div>';
+      h += '<h3>Evidence for Secondary <span class="muted small">(optional)</span></h3>' + evidenceList('s', r.sEvidence, r.s) + '</div>';
     }
     h += '<div class="card"><details' + (r.whys.some(w => w) ? ' open' : '') + '><summary>5 Whys (optional)</summary><div class="whys">' +
       r.whys.map((w,i) => txt('rca.whys.' + i, w, {a:{'aria-label':'Why ' + (i+1), placeholder:'Why #' + (i+1)}})).join('') + '</div></details></div>';
@@ -800,12 +1002,12 @@ function step4(){
 function step5(){
   const g = gate1(cur);
   let h = '<div class="card"><h2>Step 5: Action plan</h2>';
-  if (g.state === 'nc') h += '<div class="notice info">This DSAT is Non-controllable, so no action is required. You can still add one (for example, VOC feedback).</div>';
-  else if (step4Errors(cur).length) h += '<div class="notice warn">Finish the RCA in Step 4 to get suggested actions.</div>';
+  if (step4Errors(cur).length) h += '<div class="notice warn">Finish the RCA in Step 4 to get suggested actions.</div>';
   else {
     ensureActions(cur);
+    if (g.state === 'invalid') h += '<div class="notice info">Survey not valid: the suggested action is a survey validation request.</div>';
     if (cur.actionsKey !== actionsKey(cur)) h += '<div class="notice warn">The RCA changed since these actions were written. <button class="btn sm" data-act="resetActions">Reset to suggested</button></div>';
-    else h += '<p class="muted small">Suggested from your RCA. Edit anything. <button class="btn sm" data-act="resetActions">Reset to suggested</button></p>';
+    else h += '<p class="muted small">Suggested from your RCA (L2 category, or coaching lens for PEOPLE). Edit anything. <button class="btn sm" data-act="resetActions">Reset to suggested</button></p>';
   }
   h += '<datalist id="owners">' + OWNERS.map(o => '<option value="' + esc(o) + '">').join('') + '</datalist>';
   cur.actions.forEach((a,i) => {
@@ -815,94 +1017,91 @@ function step5(){
       '<div><label class="f">Due date</label><input type="date" data-bind="actions.' + i + '.due" value="' + esc(a.due) + '"></div>' +
       '<div><label class="f">Status</label><div class="seg">' + ['Open','Done'].map(s => '<button class="' + (a.status === s ? 'sel' + (s === 'Done' ? ' ok' : '') : '') + '" data-act="actStatus" data-i="' + i + '" data-v="' + s + '" aria-pressed="' + (a.status === s) + '">' + s + '</button>').join('') + '</div></div></div></div>';
   });
-  h += '<button class="btn" data-act="addAction">+ Add action</button></div>';
-  return h;
+  return h + '<button class="btn" data-act="addAction">+ Add action</button></div>';
 }
 
 function step6(){
-  const g = gate1(cur);
-  if (g.state !== 'nc' && !step4Errors(cur).length) ensureActions(cur);
-  const pc = personCause(cur);
+  if (!step4Errors(cur).length) ensureActions(cur);
+  const pc = peopleCause(cur);
   if (pc && !cur.coaching.well && !cur.coaching.fix && !cur.coaching.tip) cur.coaching = coachingDefaults(cur);
   const errs = step1Errors(cur).concat(step4Errors(cur));
   let h = '';
   if (errs.length) h += '<div class="notice ' + (ui.showErr ? 'bad' : 'warn') + '"><b>Not finished yet:</b><ul>' + errs.map(e => '<li>' + esc(e) + '</li>').join('') + '</ul></div>';
-  h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">Step 6: RCA summary</h2><button class="btn primary" data-act="copySummary">Copy summary</button></div>' +
+  const tv = trackerValues(cur);
+  h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">For your RCA Matrix tracker</h2><button class="btn primary" data-act="copyTracker"' + (tv[0][1] ? '' : ' disabled') + '>Copy L1-L4 for Excel</button></div>' +
+    '<p class="muted small">Values match the ' + esc(DB.settings.frameworkName) + ' exactly. "Copy L1-L4 for Excel" pastes into 4 cells side by side. "Copy full row" pastes the same columns as the CSV export.</p>' +
+    '<div class="tracker">' + tv.map(([k,v],i) => '<div class="k">' + esc(k) + '</div><div class="v">' + (v ? (i === 0 ? l1Badge(v) : i === 3 ? l4Badge(v) : esc(v)) : '<span class="muted">-</span>') + '</div><div><button class="btn sm" data-act="copyOne" data-i="' + i + '"' + (v ? '' : ' disabled') + '>Copy</button></div>').join('') + '</div>' +
+    '<div class="row"><button class="btn sm" data-act="copyRow">Copy full row (' + LOG_COLS.length + ' columns)</button></div></div>';
+  h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">RCA summary</h2><button class="btn primary" data-act="copySummary">Copy summary</button></div>' +
     '<p class="muted small">Paste-ready. Updates from your answers in Steps 1-5.</p>' +
     '<textarea class="summary" id="summaryBox" readonly aria-label="RCA summary">' + esc(summaryText(cur)) + '</textarea></div>';
   if (pc) {
-    h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">Coaching note (' + esc(pc.sub) + ')</h2><button class="btn sm" data-act="regenCoach">Regenerate</button><button class="btn primary" data-act="copyCoach">Copy coaching note</button></div>' +
-      '<label class="f" for="c_well">What went well</label>' + area('coaching.well', cur.coaching.well, {a:{id:'c_well', placeholder:'Tip: tag "Good handling" events in Step 3 to fill this in.'}}) +
+    h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">Coaching note</h2><button class="btn sm" data-act="regenCoach">Regenerate</button><button class="btn primary" data-act="copyCoach">Copy coaching note</button></div>' +
+      '<p class="muted small">Focus: ' + esc(pc.l2 + ' - ' + pc.l3) + (pc.lens ? ' [' + esc(pc.lens) + ']' : '') + '</p>' +
+      '<label class="f" for="c_well">What went well</label>' + area('coaching.well', cur.coaching.well, {a:{id:'c_well', placeholder:'Tip: add "Good handling" events in Step 3 to fill this in.'}}) +
       '<label class="f" for="c_fix">What to fix</label>' + area('coaching.fix', cur.coaching.fix, {a:{id:'c_fix'}}) +
       '<label class="f" for="c_tip">Tip for next call</label>' + area('coaching.tip', cur.coaching.tip, {a:{id:'c_tip'}}) + '</div>';
   }
   return h;
 }
 
-/* ================= Render: history ================= */
+/* ================= History ================= */
 function renderHistory(){
   return '<div class="card"><div class="row"><h1 class="grow" style="font-size:1.3rem;margin:0">Scrub history</h1>' +
     '<button class="btn sm" data-act="exportCSV">Export CSV</button><button class="btn sm" data-act="exportJSON">Export JSON</button><button class="btn sm" data-act="importJSON" data-v="merge">Import JSON</button></div>' +
-    '<label class="f" for="histQ">Search</label><input type="search" id="histQ" data-ui="histQ" value="' + esc(ui.histQ) + '" placeholder="Advocate, call ref, comment, sub-cause..."></div><div id="histList"></div>';
+    '<label class="f" for="histQ">Search</label><input type="search" id="histQ" data-ui="histQ" value="' + esc(ui.histQ) + '" placeholder="Advocate, call ref, comment, L1, L2, L3..."></div><div id="histList"></div>';
 }
 function renderHistList(){
   const el = $('#histList'); if (!el) return;
   const q = ui.histQ.trim().toLowerCase();
-  const list = DB.scrubs.filter(s => !q || [s.advocate, s.callRef, s.comment, s.date, s.rca.pSub, s.rca.sSub, s.rca.ncReason, rcaClass(s), verifResult(s).code, s.status, s.sample ? 'sample' : ''].join(' ').toLowerCase().includes(q))
-    .sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.updatedAt || '').localeCompare(a.updatedAt || ''));
+  const list = DB.scrubs.filter(s => {
+    if (!q) return true;
+    const p = primaryCause(s) || {}, c = secondaryCause(s) || {};
+    return [s.advocate, s.callRef, s.comment, s.date, p.l1, p.l2, p.l3, p.l4, c.l1, c.l2, c.l3, p.lens, verifResult(s).code, s.status, s.sample ? 'sample' : ''].join(' ').toLowerCase().includes(q);
+  }).sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.updatedAt || '').localeCompare(a.updatedAt || ''));
   if (!list.length) { el.innerHTML = '<div class="card muted">' + (DB.scrubs.length ? 'No scrubs match your search.' : 'No saved scrubs yet. Start one in the Scrub tab, or load sample data in Settings.') + '</div>'; return; }
   el.innerHTML = '<p class="muted small">' + list.length + ' scrub(s)</p>' + list.map(s => '<div class="hist"><div class="hh"><b>' + esc(s.date) + '</b> <span>' + esc(s.advocate || '(no advocate)') + '</span> <span class="muted">' + esc(s.callRef) + '</span>' +
     (s.status === 'complete' ? '<span class="badge ok">Complete</span>' : '<span class="badge warn">Draft</span>') + (s.sample ? '<span class="badge">Sample</span>' : '') + '</div>' +
-    '<div class="hh">' + verifBadge(s) + classBadge(s) + '</div>' +
+    '<div class="hh">' + verifBadge(s) + rcaBadges(s) + '</div>' +
     '<div class="hc">' + esc((s.comment || '').slice(0, 180)) + ((s.comment || '').length > 180 ? '...' : '') + '</div>' +
-    '<div class="row"><button class="btn sm" data-act="editScrub" data-id="' + s.id + '">Edit</button><button class="btn sm" data-act="copyScrub" data-id="' + s.id + '">Copy summary</button><button class="btn sm danger" data-act="delScrub" data-id="' + s.id + '">Delete</button></div></div>').join('');
+    '<div class="row"><button class="btn sm" data-act="editScrub" data-id="' + s.id + '">Edit</button><button class="btn sm" data-act="copyTrackerOf" data-id="' + s.id + '">Copy L1-L4</button><button class="btn sm" data-act="copyScrub" data-id="' + s.id + '">Copy summary</button><button class="btn sm danger" data-act="delScrub" data-id="' + s.id + '">Delete</button></div></div>').join('');
 }
 
-/* ================= Render: dashboard ================= */
+/* ================= Dashboard ================= */
 function filtered(){
   const f = ui.filt;
   return DB.scrubs.filter(s => (!f.from || (s.date || '') >= f.from) && (!f.to || (s.date || '') <= f.to) && (!f.adv || s.advocate === f.adv));
 }
-function causesOf(s){
-  const out = [];
-  if (gate1(s).state !== 'valid') return out;
-  const {p, sec} = causeTypes(s);
-  if (p && s.rca.pSub) out.push({type:p, sub:s.rca.pSub, role:'Primary'});
-  if (sec && s.rca.sSub) out.push({type:sec, sub:s.rca.sSub, role:'Secondary'});
-  return out;
-}
+const causesOf = s => [primaryCause(s), secondaryCause(s)].filter(Boolean);
+const l1Color = l1 => 'var(--c-' + (l1Cls(l1) || 'survey') + ')';
 function hbar(items, title){
-  const W = 320, rowH = 32, labW = 122, valW = 62, barMax = W - labW - valW;
+  // label on its own line above each bar, so long L2/L3 names stay readable on phones
+  const W = 320, rowH = 44, valW = 64, barMax = W - valW;
   const max = Math.max(1, ...items.map(i => i.value));
-  const H = items.length * rowH + 6;
-  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="' + esc(title) + '" style="max-width:480px;display:block">';
+  const H = items.length * rowH + 4;
+  let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="' + esc(title) + '" style="max-width:520px;display:block">';
   items.forEach((it, i) => {
-    const y = i * rowH + 4, w = it.value ? Math.max(4, it.value / max * barMax) : 0;
+    const y = i * rowH + 2, w = it.value ? Math.max(4, it.value / max * barMax) : 0;
+    const lab = it.label.length > 50 ? it.label.slice(0, 49) + '...' : it.label;
     s += '<g><title>' + esc(it.label + ': ' + it.value + (it.note ? ' (' + it.note + ')' : '')) + '</title>' +
-      '<rect x="0" y="' + y + '" width="' + W + '" height="' + (rowH - 4) + '" fill="transparent"/>' +
-      '<text x="' + (labW - 8) + '" y="' + (y + 19) + '" text-anchor="end" font-size="12">' + esc(it.label.length > 17 ? it.label.slice(0, 16) + '...' : it.label) + '</text>' +
-      (w ? '<rect x="' + labW + '" y="' + (y + 5) + '" width="' + w.toFixed(1) + '" height="20" rx="4" style="fill:' + it.color + '"/>' : '') +
-      '<text class="val" x="' + (labW + w + 6) + '" y="' + (y + 19) + '" font-size="12">' + it.value + (it.note ? ' (' + esc(it.note) + ')' : '') + '</text></g>';
+      '<rect x="0" y="' + y + '" width="' + W + '" height="' + (rowH - 2) + '" fill="transparent"/>' +
+      '<text x="0" y="' + (y + 13) + '" font-size="12">' + esc(lab) + '</text>' +
+      (w ? '<rect x="0" y="' + (y + 19) + '" width="' + w.toFixed(1) + '" height="16" rx="4" style="fill:' + it.color + '"/>' : '') +
+      '<text class="val" x="' + (w + 6) + '" y="' + (y + 32) + '" font-size="12">' + it.value + (it.note ? ' (' + esc(it.note) + ')' : '') + '</text></g>';
   });
-  s += '<line class="axis" x1="' + labW + '" x2="' + labW + '" y1="0" y2="' + H + '" stroke-width="1"/></svg>';
-  return s;
+  return s + '</svg>';
 }
 const pctOf = (a, b) => b ? Math.round(a / b * 100) + '%' : '0%';
 function repeatAlerts(){
-  const since = addDays(today(), -13);
-  const map = {};
+  const since = addDays(today(), -13), map = {};
   DB.scrubs.filter(s => (s.date || '') >= since && (s.date || '') <= today() && s.advocate).forEach(s => {
-    causesOf(s).forEach(c => { const k = c.type + ' - ' + c.sub; (map[k] = map[k] || new Set()).add(s.advocate); });
+    causesOf(s).filter(c => c.l1 === 'PEOPLE').forEach(c => { const k = c.l2 + ' > ' + c.l3; (map[k] = map[k] || new Set()).add(s.advocate); });
   });
   const alerts = [], watch = [];
   Object.entries(map).forEach(([k, set]) => { if (set.size >= 3) alerts.push({k, advs:[...set]}); else if (set.size === 2) watch.push({k, advs:[...set]}); });
   return {alerts, watch};
 }
-function allAdvocates(){
-  const set = new Set(DB.settings.advocates);
-  DB.scrubs.forEach(s => s.advocate && set.add(s.advocate));
-  return [...set].sort();
-}
+function allAdvocates(){ const set = new Set(DB.settings.advocates); DB.scrubs.forEach(s => s.advocate && set.add(s.advocate)); return [...set].sort(); }
 function renderDashboard(){
   const f = ui.filt, list = filtered();
   let h = '<h1 style="font-size:1.3rem">Dashboard</h1>';
@@ -912,108 +1111,117 @@ function renderDashboard(){
     '<div class="row" style="margin-top:10px"><button class="btn sm" data-act="range" data-v="14">Last 14 days</button><button class="btn sm" data-act="range" data-v="30">Last 30 days</button><button class="btn sm" data-act="range" data-v="0">All time</button><button class="btn sm" data-act="range" data-v="clear">Clear filters</button></div></div>';
 
   const ra = repeatAlerts();
-  if (ra.alerts.length) {
-    h += '<div class="card alert-card"><h2 style="color:var(--bad)">&#9888; Repeat alert</h2>' + ra.alerts.map(a => '<div class="notice bad"><b>' + esc(a.k) + '</b> seen with ' + a.advs.length + ' different advocates in the last 14 days (' + esc(a.advs.join(', ')) + '). <b>Possible Training/Procedure gap, review with trainer.</b></div>').join('') + '<p class="muted small">Based on all scrubs from the last 14 days (filters not applied).</p></div>';
-  } else {
-    h += '<div class="card"><h2>Repeat alert</h2><p class="muted small">No sub-cause shared by 3+ different advocates in the last 14 days.</p>' +
-      (ra.watch.length ? '<div class="notice warn">Watch: ' + ra.watch.map(w => esc(w.k) + ' (' + esc(w.advs.join(', ')) + ')').join('; ') + ' - one more advocate would trigger an alert.</div>' : '') + '</div>';
-  }
+  if (ra.alerts.length) h += '<div class="card alert-card"><h2 style="color:var(--bad)">&#9888; Repeat alert</h2>' + ra.alerts.map(a => '<div class="notice bad">PEOPLE &gt; <b>' + esc(a.k) + '</b> seen with ' + a.advs.length + ' different advocates in the last 14 days (' + esc(a.advs.join(', ')) + '). <b>Possible Training/Procedure gap, review with trainer.</b></div>').join('') + '<p class="muted small">Based on all scrubs from the last 14 days (filters not applied).</p></div>';
+  else h += '<div class="card"><h2>Repeat alert</h2><p class="muted small">No PEOPLE root cause (L3) shared by 3+ different advocates in the last 14 days.</p>' +
+    (ra.watch.length ? '<div class="notice warn">Watch: ' + ra.watch.map(w => esc(w.k) + ' (' + esc(w.advs.join(', ')) + ')').join('; ') + ' - one more advocate would trigger an alert.</div>' : '') + '</div>';
 
-  const cls = {Person:0, Process:0, 'Non-controllable':0, Undecided:0};
-  list.forEach(s => cls[rcaClass(s)]++);
+  const ctl = {[CTRL]:0, [NCTRL]:0, Undecided:0};
+  list.forEach(s => { const c = ctrlClass(s); ctl[c in ctl ? c : NCTRL]++; });
   const vr = list.map(verifResult).filter(v => ['PASS','PARTIAL','FAIL'].includes(v.code));
   const vc = {PASS:0, PARTIAL:0, FAIL:0}; vr.forEach(v => vc[v.code]++);
   const openActs = [];
   list.forEach(s => s.actions.forEach((a,i) => { if (a.status !== 'Done') openActs.push({s, a, i}); }));
-  const total = list.length;
+  const total = list.length, flagged = list.filter(s => { const g = gate1(s); return g.state === 'valid' && g.review; }).length;
   h += '<div class="tiles">' +
     '<div class="tile"><div class="n">' + total + '</div><div class="l">Total scrubs</div></div>' +
-    '<div class="tile"><div class="n">' + pctOf(vc.PASS, vr.length) + '</div><div class="l">Verification pass rate (' + vc.PASS + ' of ' + vr.length + ' checked)</div></div>' +
-    '<div class="tile"><div class="n">' + pctOf(cls.Person, total) + '</div><div class="l">Person</div></div>' +
-    '<div class="tile"><div class="n">' + pctOf(cls.Process, total) + '</div><div class="l">Process</div></div>' +
-    '<div class="tile"><div class="n">' + pctOf(cls['Non-controllable'], total) + '</div><div class="l">Non-controllable</div></div>' +
-    '<div class="tile"><div class="n">' + openActs.length + '</div><div class="l">Open actions</div></div></div>';
-
-  if (!total) { h += '<div class="card muted">No scrubs in this view. Change the filters, or load sample data in Settings.</div>'; return h; }
-
-  const split = [
-    {label:'Person', value:cls.Person, color:'var(--person)', note:pctOf(cls.Person, total)},
-    {label:'Process', value:cls.Process, color:'var(--process)', note:pctOf(cls.Process, total)},
-    {label:'Non-controllable', value:cls['Non-controllable'], color:'var(--nc)', note:pctOf(cls['Non-controllable'], total)}
-  ];
-  if (cls.Undecided) split.push({label:'Undecided', value:cls.Undecided, color:'var(--undecided)', note:pctOf(cls.Undecided, total)});
-  h += '<div class="card"><h2>Person vs Process vs Non-controllable</h2><p class="muted small">By Primary cause. Count (share of scrubs).</p>' + hbar(split, 'RCA split') + '</div>';
-
-  const drv = {};
-  list.forEach(s => { const seen = new Set(); s.events.forEach(e => { if (!e.positive && e.driver) seen.add(e.driver); }); seen.forEach(d => drv[d] = (drv[d] || 0) + 1); });
-  const drvItems = Object.entries(drv).sort((a,b) => b[1] - a[1]).slice(0, 8).map(([k,v]) => ({label:k, value:v, color:'var(--driver)'}));
-  h += '<div class="grid2"><div class="card"><h2>Top DSAT drivers</h2><p class="muted small">Number of scrubs with at least one timeline event tagged to the driver.</p>' + (drvItems.length ? hbar(drvItems, 'Top DSAT drivers') : '<p class="muted">No tagged events yet.</p>') + '</div>';
-
-  const subs = {};
-  list.forEach(s => causesOf(s).forEach(c => { const k = c.sub; subs[k] = subs[k] || {v:0, type:c.type}; subs[k].v++; }));
-  const subItems = Object.entries(subs).sort((a,b) => b[1].v - a[1].v).map(([k,o]) => ({label:k, value:o.v, color: o.type === 'Person' ? 'var(--person)' : 'var(--process)'}));
-  h += '<div class="card"><h2>Sub-causes</h2><p class="muted small">Primary + Secondary.</p>' + (subItems.length ? hbar(subItems, 'Sub-causes') + '<div class="legend"><span><i style="background:var(--person)"></i>Person</span><span><i style="background:var(--process)"></i>Process</span></div>' : '<p class="muted">No sub-causes yet.</p>') + '</div></div>';
-
+    '<div class="tile"><div class="n">' + pctOf(ctl[CTRL], total) + '</div><div class="l">Controllable (' + ctl[CTRL] + ')</div></div>' +
+    '<div class="tile"><div class="n">' + pctOf(ctl[NCTRL], total) + '</div><div class="l">Non Controllable (' + ctl[NCTRL] + ')</div></div>' +
+    '<div class="tile"><div class="n">' + pctOf(vc.PASS, vr.length) + '</div><div class="l">Verification pass rate (' + vc.PASS + ' of ' + vr.length + ')</div></div>' +
+    '<div class="tile"><div class="n">' + openActs.length + '</div><div class="l">Open actions</div></div>' +
+    '<div class="tile"><div class="n">' + flagged + '</div><div class="l">Flagged for review</div></div></div>';
+  if (!total) return h + '<div class="card muted">No scrubs in this view. Change the filters, or load sample data in Settings.</div>';
   h += '<div class="card"><h2>Verification results</h2><div class="row"><span class="badge ok">PASS ' + vc.PASS + '</span><span class="badge warn">PARTIAL ' + vc.PARTIAL + '</span><span class="badge bad">FAIL ' + vc.FAIL + '</span>' + (total - vr.length ? '<span class="badge">Not finished ' + (total - vr.length) + '</span>' : '') + '</div></div>';
 
-  // per advocate
+  const ctlItems = [{label:CTRL, value:ctl[CTRL], color:'var(--c-ctrl)', note:pctOf(ctl[CTRL], total)}, {label:NCTRL, value:ctl[NCTRL], color:'var(--c-nc)', note:pctOf(ctl[NCTRL], total)}];
+  if (ctl.Undecided) ctlItems.push({label:'RCA not finished', value:ctl.Undecided, color:'var(--c-undecided)', note:pctOf(ctl.Undecided, total)});
+  const l1c = {};
+  list.forEach(s => { const p = primaryCause(s); if (p) l1c[p.l1] = (l1c[p.l1] || 0) + 1; });
+  const l1Items = uniq(l1List().concat(Object.keys(l1c))).map(l1 => ({label:l1, value:l1c[l1] || 0, color:l1Color(l1), note:pctOf(l1c[l1] || 0, total)}));
+  h += '<div class="grid2"><div class="card"><h2>' + H_L4 + '</h2><p class="muted small">Primary cause. Count (share of scrubs).</p>' + hbar(ctlItems, 'Controllability split') + '</div>' +
+    '<div class="card"><h2>' + H_L1 + '</h2><p class="muted small">Top DSAT drivers by Primary cause.</p>' + hbar(l1Items, 'Primary driver split') + '</div></div>';
+
+  const l2c = {}, l3c = {};
+  list.forEach(s => { const p = primaryCause(s); if (!p) return; const k2 = p.l1 + '|' + p.l2; l2c[k2] = (l2c[k2] || 0) + 1; const k3 = keyOf(p); l3c[k3] = (l3c[k3] || 0) + 1; });
+  const toItems = (obj, lab) => Object.entries(obj).sort((a,b) => b[1] - a[1]).slice(0, 8).map(([k,v]) => { const p = parseKey(k); return {label: lab(p), value:v, color:l1Color(p.l1)}; });
+  h += '<div class="grid2"><div class="card"><h2>Top ' + H_L2 + '</h2><p class="muted small">Primary cause, colour = L1.</p>' + hbar(toItems(l2c, p => p.l2), 'Top root cause categories') + '</div>' +
+    '<div class="card"><h2>Top ' + H_L3 + '</h2><p class="muted small">Primary cause, colour = L1. Hover for full text.</p>' + hbar(toItems(l3c, p => p.l3), 'Top root cause details') + '</div></div>';
+  h += '<div class="legend" style="margin:-6px 0 14px">' + l1List().map(l1 => '<span><i style="background:' + l1Color(l1) + '"></i>' + esc(l1) + '</span>').join('') + '</div>';
+
+  const tagc = {};
+  list.forEach(s => { const seen = new Set(); s.events.forEach(e => { if (!e.positive && e.tag) seen.add(parseKey(e.tag).l1 + '|' + parseKey(e.tag).l2); }); seen.forEach(k => tagc[k] = (tagc[k] || 0) + 1); });
+  const tagItems = toItems(tagc, p => p.l1 + ' > ' + p.l2);
+  h += '<div class="card"><h2>Timeline tags</h2><p class="muted small">Scrubs with at least one timeline event tagged to the category (L1 &gt; L2).</p>' + (tagItems.length ? hbar(tagItems, 'Timeline tags') : '<p class="muted">No tagged events yet.</p>') + '</div>';
+
   const per = {};
   list.forEach(s => {
     const a = s.advocate || '(none)';
-    const o = per[a] = per[a] || {n:0, Person:0, Process:0, NC:0, fail:0, subs:{}, open:0};
+    const o = per[a] = per[a] || {n:0, ctrl:0, nc:0, fail:0, subs:{}, open:0};
     o.n++;
-    const c = rcaClass(s); if (c === 'Person') o.Person++; else if (c === 'Process') o.Process++; else if (c === 'Non-controllable') o.NC++;
+    const c = ctrlClass(s); if (c === CTRL) o.ctrl++; else if (c === NCTRL) o.nc++;
     if (verifResult(s).code === 'FAIL') o.fail++;
-    causesOf(s).forEach(x => o.subs[x.sub] = (o.subs[x.sub] || 0) + 1);
+    causesOf(s).filter(x => x.l1 === 'PEOPLE').forEach(x => o.subs[x.l3] = (o.subs[x.l3] || 0) + 1);
     o.open += s.actions.filter(x => x.status !== 'Done').length;
   });
-  h += '<div class="card"><h2>Per advocate</h2><div class="tbl-wrap"><table><thead><tr><th>Advocate</th><th>Scrubs</th><th>Person</th><th>Process</th><th>Non-ctrl</th><th>Verif FAIL</th><th>Repeat sub-causes</th><th>Open actions</th><th></th></tr></thead><tbody>' +
+  h += '<div class="card"><h2>Per advocate</h2><div class="tbl-wrap"><table><thead><tr><th>Advocate</th><th>Scrubs</th><th>Controllable</th><th>Non Ctrl</th><th>Verif FAIL</th><th>Repeat PEOPLE L3</th><th>Open actions</th><th></th></tr></thead><tbody>' +
     Object.entries(per).sort((a,b) => b[1].n - a[1].n).map(([a,o]) => {
-      const rep = Object.entries(o.subs).filter(([,n]) => n >= 2).map(([k,n]) => k + ' x' + n).join(', ');
-      return '<tr><td><b>' + esc(a) + '</b></td><td>' + o.n + '</td><td>' + o.Person + '</td><td>' + o.Process + '</td><td>' + o.NC + '</td><td>' + o.fail + '</td><td>' + (rep ? '<span class="overdue">' + esc(rep) + '</span>' : '<span class="muted">-</span>') + '</td><td>' + o.open + '</td><td>' + (a !== '(none)' && f.adv !== a ? '<button class="btn sm" data-act="advView" data-v="' + esc(a) + '">View</button>' : '') + '</td></tr>';
+      const rep = Object.entries(o.subs).filter(([,n]) => n >= 2).map(([k,n]) => k + ' x' + n).join('; ');
+      return '<tr><td><b>' + esc(a) + '</b></td><td>' + o.n + '</td><td>' + o.ctrl + '</td><td>' + o.nc + '</td><td>' + o.fail + '</td><td>' + (rep ? '<span class="overdue">' + esc(rep) + '</span>' : '<span class="muted">-</span>') + '</td><td>' + o.open + '</td><td>' + (a !== '(none)' && f.adv !== a ? '<button class="btn sm" data-act="advView" data-v="' + esc(a) + '">View</button>' : '') + '</td></tr>';
     }).join('') + '</tbody></table></div></div>';
 
   if (f.adv) {
     const mine = list.slice().sort((a,b) => (b.date || '').localeCompare(a.date || ''));
-    h += '<div class="card"><h2>' + esc(f.adv) + ': scrubs</h2>' + mine.map(s => '<div class="hist"><div class="hh"><b>' + esc(s.date) + '</b> <span class="muted">' + esc(s.callRef) + '</span>' + verifBadge(s) + classBadge(s) + '</div><div class="hc">' + esc((s.comment || '').slice(0, 140)) + '</div><button class="btn sm" data-act="editScrub" data-id="' + s.id + '">Open</button></div>').join('') + '</div>';
+    h += '<div class="card"><h2>' + esc(f.adv) + ': scrubs</h2>' + mine.map(s => '<div class="hist"><div class="hh"><b>' + esc(s.date) + '</b> <span class="muted">' + esc(s.callRef) + '</span>' + verifBadge(s) + '</div><div class="hh">' + rcaBadges(s) + '</div><div class="hc">' + esc((s.comment || '').slice(0, 140)) + '</div><button class="btn sm" data-act="editScrub" data-id="' + s.id + '">Open</button></div>').join('') + '</div>';
     const mineOpen = openActs.filter(o => o.s.advocate === f.adv);
     h += '<div class="card"><h2>' + esc(f.adv) + ': open actions (' + mineOpen.length + ')</h2>' + (mineOpen.length ? mineOpen.map(o => '<div class="hist"><div class="hh"><b>' + esc(o.a.action) + '</b></div><div class="small">' + esc(o.a.owner || 'No owner') + ' | Due: <span class="' + (o.a.due && o.a.due < today() ? 'overdue' : '') + '">' + esc(o.a.due || '-') + (o.a.due && o.a.due < today() ? ' (overdue)' : '') + '</span> | Call ' + esc(o.s.callRef || '-') + ' on ' + esc(o.s.date) + '</div><div style="margin-top:6px"><button class="btn sm" data-act="markDone" data-id="' + o.s.id + '" data-i="' + o.i + '">Mark Done</button></div></div>').join('') : '<p class="muted">No open actions.</p>') + '</div>';
   }
   return h;
 }
 
-/* ================= Render: settings ================= */
-function sInput(path, val, label){
-  return '<input type="text" data-sbind="' + path + '" value="' + esc(val) + '" aria-label="' + esc(label) + '" autocomplete="off">';
-}
-function listEditor(key, title, desc, addLabel){
-  const arr = DB.settings[key];
-  return '<div class="card"><h2>' + title + '</h2><p class="muted small">' + desc + '</p>' +
-    arr.map((v,i) => '<div class="srow">' + sInput(key + '.' + i, v, title + ' ' + (i+1)) +
-      '<button class="btn sm" data-act="sMove" data-v="' + key + '" data-i="' + i + '" data-id="-1" aria-label="Move up"' + (i === 0 ? ' disabled' : '') + '>&uarr;</button>' +
-      '<button class="btn sm danger" data-act="sDel" data-v="' + key + '" data-i="' + i + '">Remove</button></div>').join('') +
-    '<button class="btn" data-act="sAdd" data-v="' + key + '">+ ' + addLabel + '</button></div>';
-}
+/* ================= Settings ================= */
+function sInput(path, val, label){ return '<input type="text" data-sbind="' + path + '" value="' + esc(val) + '" aria-label="' + esc(label) + '" autocomplete="off">'; }
 function renderSettings(){
   const st = DB.settings;
   let h = '<h1 style="font-size:1.3rem">Settings</h1>';
-  if (ui.settingsMsg) h += '<div class="notice bad">' + esc(ui.settingsMsg) + '</div>';
-  h += '<div class="card"><h2>Verification steps</h2><p class="muted small">Enter your site\'s official verification steps in order. Tick <b>Critical</b> for steps where a miss means Compliance fail. Changes apply to new scrubs (or use "Reload steps from Settings" in Step 2).</p>' +
+  h += '<div class="card"><h2>Verification steps</h2><p class="muted small">Enter your site\'s official verification steps in order. Tick <b>Critical</b> where a miss means Compliance fail. Changes apply to new scrubs (or use "Reload steps from Settings" in Step 2).</p>' +
     st.verifSteps.map((v,i) => '<div class="srow">' + sInput('verifSteps.' + i + '.name', v.name, 'Verification step ' + (i+1)) +
       '<label class="crit"><input type="checkbox" data-scheck="' + i + '"' + (v.critical ? ' checked' : '') + '> Critical</label>' +
       '<button class="btn sm" data-act="sMove" data-v="verifSteps" data-i="' + i + '" aria-label="Move up"' + (i === 0 ? ' disabled' : '') + '>&uarr;</button>' +
       '<button class="btn sm danger" data-act="sDel" data-v="verifSteps" data-i="' + i + '">Remove</button></div>').join('') +
     '<button class="btn" data-act="sAdd" data-v="verifSteps">+ Add step</button></div>';
-  h += listEditor('drivers', 'DSAT drivers', 'Used to tag timeline events and for the Top drivers chart.', 'Add driver');
-  h += listEditor('advocates', 'Advocates', 'Names shown in the Step 1 dropdown. Removing a name does not change saved scrubs.', 'Add advocate');
+  h += '<div class="card"><h2>Advocates</h2><p class="muted small">Names shown in the Step 1 dropdown. Removing a name does not change saved scrubs.</p>' +
+    st.advocates.map((v,i) => '<div class="srow">' + sInput('advocates.' + i, v, 'Advocate ' + (i+1)) + '<button class="btn sm danger" data-act="sDel" data-v="advocates" data-i="' + i + '">Remove</button></div>').join('') +
+    '<button class="btn" data-act="sAdd" data-v="advocates">+ Add advocate</button></div>';
+  h += '<div class="card"><h2>RCA framework</h2>' +
+    '<p class="muted small">Currently: <b>' + esc(st.frameworkName) + '</b> (' + st.framework.length + ' rows, ' + l1List().length + ' Primary Drivers). These are the exact L1 / L2 / L3 / L4 values the tool writes into your tracker. Saved scrubs keep the values they were scrubbed with.</p>' +
+    (ui.fwMsg ? '<div class="notice info">' + esc(ui.fwMsg) + '</div>' : '') +
+    '<div class="grid2"><div><label class="f" for="fwF">Show L1</label><select id="fwF" data-ui="fwFilter"><option value="">All</option>' + l1List().map(l => '<option' + (ui.fwFilter === l ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></div>' +
+    '<div><label class="f" for="fwQ">Search</label><input type="search" id="fwQ" data-ui="fwQ" value="' + esc(ui.fwQ) + '" placeholder="Find L2 or L3 text"></div></div>' +
+    '<div id="fwList" style="margin-top:10px"></div>' +
+    '<div class="row" style="margin-top:8px"><button class="btn" data-act="fwAdd">+ Add row</button><button class="btn danger" data-act="fwReset">Reset to ' + esc(FW_NAME) + '</button></div>' +
+    '<details style="margin-top:10px"><summary>Load a new version from Excel (copy &amp; paste)</summary>' +
+    '<p class="small muted">In Excel, select columns A-D of the Framework sheet (header row is fine), copy, and paste below. This replaces the framework.</p>' +
+    '<label class="f" for="fwName">Version name</label><input type="text" id="fwName" data-ui="fwName" placeholder="e.g. FS DSAT RCA Matrix v2.1">' +
+    '<label class="f" for="fwPaste">Pasted rows</label><textarea id="fwPaste" data-ui="fwPaste" placeholder="PEOPLE&#9;Issue Identification&#9;Failed to confirm understanding...&#9;Controllable"></textarea>' +
+    '<div style="margin-top:8px"><button class="btn primary" data-act="fwPaste">Replace framework with pasted rows</button></div></details></div>';
   const nSample = DB.scrubs.filter(s => s.sample).length;
   h += '<div class="card"><h2>Sample data</h2><p class="muted small">Loads 3 clearly fake scrubs ("Sample Advocate A/B/C") so you can test every screen.</p><div class="row">' +
     '<button class="btn" data-act="loadSample">Load 3 sample scrubs</button><button class="btn danger" data-act="clearSample"' + (nSample ? '' : ' disabled') + '>Clear sample data' + (nSample ? ' (' + nSample + ')' : '') + '</button></div></div>';
-  h += '<div class="card"><h2>Backup &amp; export</h2><p class="muted small">Your data lives only in this browser on this device. Export a JSON backup regularly. CSV opens in Excel.</p><div class="row">' +
+  h += '<div class="card"><h2>Backup &amp; export</h2><p class="muted small">Your data lives only in this browser on this device. Export a JSON backup regularly. The CSV opens in Excel; its L1-L4 columns use the exact headers of your RCA Matrix.</p><div class="row">' +
     '<button class="btn" data-act="exportCSV">Export CSV</button><button class="btn" data-act="exportJSON">Export JSON backup</button>' +
     '<button class="btn" data-act="importJSON" data-v="merge">Import JSON (merge)</button><button class="btn" data-act="importJSON" data-v="replace">Import JSON (replace all)</button></div></div>';
   h += '<div class="card"><h2>Danger zone</h2><button class="btn danger" data-act="clearAll">Delete ALL data</button></div>';
   return h;
+}
+function renderFwList(){
+  const el = $('#fwList'); if (!el) return;
+  const q = ui.fwQ.trim().toLowerCase();
+  const rows = fw().map((r,i) => ({r,i})).filter(({r}) => (!ui.fwFilter || r.l1 === ui.fwFilter) && (!q || (r.l1 + ' ' + r.l2 + ' ' + r.l3).toLowerCase().includes(q)));
+  el.innerHTML = '<p class="small muted">' + rows.length + ' row(s) shown</p>' + rows.map(({r,i}) => '<div class="fwrow">' +
+    '<input type="text" data-fw="' + i + '.l1" value="' + esc(r.l1) + '" aria-label="L1">' +
+    '<input type="text" data-fw="' + i + '.l2" value="' + esc(r.l2) + '" aria-label="L2">' +
+    '<input type="text" class="l3" data-fw="' + i + '.l3" value="' + esc(r.l3) + '" aria-label="L3">' +
+    '<select data-fw="' + i + '.l4" aria-label="L4">' + [CTRL, NCTRL].map(v => '<option' + (r.l4 === v ? ' selected' : '') + '>' + v + '</option>').join('') + '</select>' +
+    '<button class="btn sm danger" data-act="fwDel" data-i="' + i + '" aria-label="Delete row">Delete</button></div>').join('');
 }
 
 /* ================= Path helpers ================= */
@@ -1026,17 +1234,16 @@ function setPath(obj, path, val){
 function markPII(el){
   const bad = hasPII(el.value);
   el.classList.toggle('pii-bad', bad);
-  let n = el.nextElementSibling;
-  const hasMsg = n && n.classList.contains('pii-msg');
+  const n = el.nextElementSibling, hasMsg = n && n.classList.contains('pii-msg');
   if (bad && !hasMsg) el.insertAdjacentHTML('afterend', piiMsgHTML);
   if (!bad && hasMsg) n.remove();
   return bad;
 }
 
-/* ================= Navigation ================= */
+/* ================= Navigation & save ================= */
 function goStep(n){
   n = Math.max(1, Math.min(6, n));
-  if (n === 5 && step <= 4 && gate1(cur).state !== 'nc' && step4Errors(cur).length) {
+  if (n === 5 && step <= 4 && step4Errors(cur).length) {
     step = 4; ui.showErr = true; render();
     const e = $('#s4err'); if (e) e.scrollIntoView({block:'center'});
     toast('Finish the RCA first (see the list)');
@@ -1044,29 +1251,25 @@ function goStep(n){
   }
   ui.showErr = false; step = n; render(); window.scrollTo(0, 0); saveCur();
 }
-function setView(v){ view = v; ui.settingsMsg = ''; render(); window.scrollTo(0, 0); }
-
-/* ================= Save ================= */
+function setView(v){ view = v; ui.fwMsg = ''; render(); window.scrollTo(0, 0); }
 function commitScrub(status){
   const bad = piiScan(cur);
   if (bad.length) { toast('Saving blocked: remove 6+ digit numbers from ' + bad.join(', '), 4500); updatePiiBar(); return false; }
   if (status === 'complete') {
     const errs = step1Errors(cur).concat(step4Errors(cur));
     if (errs.length) { ui.showErr = true; render(); toast('Not finished yet - see the list at the top', 3500); window.scrollTo(0, 0); return false; }
-    if (gate1(cur).state !== 'nc') ensureActions(cur);
+    ensureActions(cur);
   }
-  cur.status = status;
-  cur.updatedAt = new Date().toISOString();
+  cur.status = status; cur.updatedAt = new Date().toISOString();
   const i = DB.scrubs.findIndex(s => s.id === cur.id);
   if (i >= 0) DB.scrubs[i] = clone(cur); else DB.scrubs.push(clone(cur));
-  saveDB(); dirty = false; saveCur();
-  render();
-  toast(status === 'complete' ? 'Scrub saved as complete' : 'Draft saved');
+  saveDB(); dirty = false; saveCur(); render();
+  toast(status === 'complete' ? 'Scrub saved. Copy L1-L4 into your tracker.' : 'Draft saved', 3000);
   return true;
 }
 function startNew(force){
   if (!force && dirty && !confirm('Discard unsaved changes to the current scrub?')) return;
-  cur = newScrub(); step = 1; dirty = false; ui.addingAdv = false; ui.ev = {ts:'', chip:'', note:'', driver:''}; ui.evErr = ''; ui.showErr = false;
+  cur = newScrub(); step = 1; dirty = false; ui.addingAdv = false; ui.ev = {ts:'', chip:'', note:'', tag:''}; ui.evErr = ''; ui.showErr = false;
   lsDel(LS_CUR); view = 'scrub'; render(); window.scrollTo(0, 0);
 }
 
@@ -1077,27 +1280,15 @@ function csvCell(v){
   return '"' + s.replace(/"/g, '""') + '"';
 }
 function exportCSV(){
-  const head = ['Date','Advocate','Call ref','Call length','DSAT comment','Status','Sample','Verification','Verification detail','Valid','Non-controllable reason','Flagged for review','RCA class','Primary type','Primary sub-cause','Primary explanation','Secondary type','Secondary sub-cause','Secondary explanation','Verification justification','Evidence','Drivers','5 Whys','Actions','Open actions','Created','Updated','ID'];
-  const rows = DB.scrubs.slice().sort((a,b) => (a.date || '').localeCompare(b.date || '')).map(s => {
-    const g = gate1(s), {p, sec} = causeTypes(s), r = s.rca;
-    const evIds = g.state === 'valid' ? liveEvidence(s, r.pEvidence).concat(liveEvidence(s, r.sEvidence).filter(id => !r.pEvidence.includes(id))) : [];
-    const drivers = [...new Set(s.events.filter(e => !e.positive && e.driver).map(e => e.driver))];
-    return [s.date, s.advocate, s.callRef, s.callLength, s.comment, s.status, s.sample ? 'Yes' : '', verifResult(s).code, verifDetail(s),
-      g.state === 'valid' ? 'Yes' : g.state === 'nc' ? 'No' : '', g.state === 'nc' ? r.ncReason : '', g.state === 'valid' && g.review ? 'Yes' : '',
-      rcaClass(s), g.state === 'valid' ? p : '', g.state === 'valid' ? r.pSub : '', g.state === 'valid' ? r.pExplain : '',
-      g.state === 'valid' ? sec : '', g.state === 'valid' && sec ? r.sSub : '', g.state === 'valid' && sec ? r.sExplain : '', r.justification,
-      evIds.map(id => evById(s, id)).filter(Boolean).map(evText).join('; '), drivers.join('; '),
-      r.whys.filter(Boolean).join(' | '),
-      s.actions.map(a => a.action + ' (' + a.owner + ', ' + a.due + ', ' + a.status + ')').join(' | '),
-      s.actions.filter(a => a.status !== 'Done').length, s.createdAt, s.updatedAt, s.id];
-  });
+  const head = LOG_COLS.concat(['Open actions','Status','Sample','Created','Updated','ID']);
+  const rows = DB.scrubs.slice().sort((a,b) => (a.date || '').localeCompare(b.date || '')).map(s => logRow(s).concat([s.actions.filter(a => a.status !== 'Done').length, s.status, s.sample ? 'Yes' : '', s.createdAt, s.updatedAt, s.id]));
   const csv = '﻿' + [head].concat(rows).map(r => r.map(csvCell).join(',')).join('\r\n');
-  download('dsat-scrubs-' + today() + '.csv', csv, 'text/csv;charset=utf-8');
+  download('dsat-scrub-buddy-' + today() + '.csv', csv, 'text/csv;charset=utf-8');
   toast('CSV exported (' + rows.length + ' scrubs)');
 }
 function exportJSON(){
-  const data = {app:'DSAT Scrub Assistant', version:1, exportedAt:new Date().toISOString(), settings:DB.settings, scrubs:DB.scrubs};
-  download('dsat-scrub-backup-' + today() + '.json', JSON.stringify(data, null, 2), 'application/json');
+  const data = {app:APP, version:2, exportedAt:new Date().toISOString(), settings:DB.settings, scrubs:DB.scrubs};
+  download('dsat-scrub-buddy-backup-' + today() + '.json', JSON.stringify(data, null, 2), 'application/json');
   toast('JSON backup exported');
 }
 let importMode = 'merge';
@@ -1106,70 +1297,70 @@ function handleImport(file){
   rd.onload = () => {
     let o;
     try { o = JSON.parse(rd.result); } catch(e) { toast('That file is not valid JSON', 3500); return; }
-    if (!o || !Array.isArray(o.scrubs)) { toast('Not a DSAT Scrub Assistant backup (no scrubs found)', 3500); return; }
-    const scrubs = o.scrubs.map(normScrub);
+    if (!o || !Array.isArray(o.scrubs)) { toast('Not a DSAT Scrub Buddy backup (no scrubs found)', 3500); return; }
+    let settings, scrubs;
+    if (o.app === 'DSAT Scrub Assistant' || o.version === 1) { const m = migrateV1(o); settings = m.settings; scrubs = m.scrubs; }
+    else { settings = normSettings(o.settings); scrubs = o.scrubs.map(normScrub); }
     if (importMode === 'replace') {
       if (!confirm('Replace ALL current data with this backup (' + scrubs.length + ' scrubs)?')) return;
-      DB = {app:'DSAT Scrub Assistant', version:1, settings: normSettings(o.settings), scrubs};
-    } else {
-      let added = 0, updated = 0;
-      scrubs.forEach(s => { const i = DB.scrubs.findIndex(x => x.id === s.id); if (i >= 0) { DB.scrubs[i] = s; updated++; } else { DB.scrubs.push(s); added++; } });
-      const st = normSettings(o.settings);
-      st.advocates.forEach(a => { if (!DB.settings.advocates.includes(a)) DB.settings.advocates.push(a); });
-      st.drivers.forEach(d => { if (!DB.settings.drivers.includes(d)) DB.settings.drivers.push(d); });
-      saveDB(); render(); toast('Imported: ' + added + ' new, ' + updated + ' updated'); return;
+      DB = {app:APP, version:2, settings, scrubs};
+      saveDB(); render(); toast('Backup restored (' + scrubs.length + ' scrubs)'); return;
     }
-    saveDB(); render(); toast('Backup restored (' + scrubs.length + ' scrubs)');
+    let added = 0, updated = 0;
+    scrubs.forEach(s => { const i = DB.scrubs.findIndex(x => x.id === s.id); if (i >= 0) { DB.scrubs[i] = s; updated++; } else { DB.scrubs.push(s); added++; } });
+    settings.advocates.forEach(a => { if (!DB.settings.advocates.includes(a)) DB.settings.advocates.push(a); });
+    saveDB(); render(); toast('Imported: ' + added + ' new, ' + updated + ' updated');
   };
   rd.readAsText(file);
 }
+function parseFwPaste(text){
+  const rows = [];
+  String(text || '').split(/\r?\n/).forEach(line => {
+    if (!line.trim()) return;
+    const c = line.split('\t').map(x => x.trim());
+    if (c.length < 3) return;
+    if (/^(L1|Primary Driver)/i.test(c[0])) return; // header
+    const l1 = c[0].toUpperCase(), l4raw = (c[3] || '').toLowerCase();
+    const l4 = l4raw.startsWith('non') ? NCTRL : l4raw.startsWith('contr') ? CTRL : (l1 === 'PEOPLE' ? CTRL : NCTRL);
+    if (c[0] && c[1] && c[2]) rows.push({l1, l2:c[1], l3:c[2], l4});
+  });
+  return rows;
+}
 
 /* ================= Sample data ================= */
-function sampleVerif(statuses){
-  return DB.settings.verifSteps.map((s,i) => ({name:s.name, critical:!!s.critical, status: statuses[i] || 'done', ts: ''}));
-}
+function sampleVerif(statuses){ return DB.settings.verifSteps.map((s,i) => ({name:s.name, critical:!!s.critical, status: statuses[i] || 'done', ts: ''})); }
 function makeSamples(){
-  const t = today(), mk = () => newScrub();
-  const a = mk();
+  const t = today(), ev = (ts, chip, note, tag, positive) => ({id:uid(), ts, chip, note, tag: tag || '', positive:!!positive});
+  const chipTag = l => (CHIPS.find(c => c.label === l) || {}).tag || '';
+  const a = newScrub();
   Object.assign(a, {sample:true, status:'complete', advocate:'Sample Advocate A', callRef:'SAMPLE-001', date:addDays(t, -2), callLength:'14:20',
     comment:'(FAKE) Customer said the advocate gave the wrong dispute timeline and they had to explain the issue twice.'});
-  a.verif = sampleVerif(['done','done','late']); a.verif[2] && (a.verif[2].ts = '01:40');
-  a.events = [
-    {id:uid(), ts:'00:25', chip:'Good handling', note:'Warm greeting, used customer-friendly tone', driver:'', positive:true},
-    {id:uid(), ts:'02:10', chip:'Customer repeated issue', note:'Asked customer to repeat the dispute reason', driver:'Resolution', positive:false},
-    {id:uid(), ts:'04:45', chip:'Wrong info given', note:'Said dispute closes in 2 days (actual: up to 10 business days)', driver:'Resolution', positive:false},
-    {id:uid(), ts:'07:30', chip:'Over-promised', note:'Promised a callback "today"', driver:'Resolution', positive:false}
-  ];
-  Object.assign(a.rca, {q1:'yes', q2:'no', q3:'no', g2:'yes', pSub:'Knowledge', pExplain:'Did not know the dispute timeline and gave wrong info', pEvidence:[a.events[2].id, a.events[3].id],
-    whys:['Customer got wrong timeline','Advocate guessed the timeline','Did not check the KB article','Not sure where the article is','','']});
-  a.rca.whys = a.rca.whys.slice(0,5);
+  a.verif = sampleVerif(['done','done','late']); if (a.verif[2]) a.verif[2].ts = '01:40';
+  a.events = [ev('00:25','Good handling','Warm greeting, friendly tone','',true), ev('02:10','Customer repeated issue','Asked customer to repeat the dispute reason',chipTag('Customer repeated issue')),
+    ev('04:45','Wrong info given','Said dispute closes in 2 days (actual: up to 10 business days)',chipTag('Wrong info given')), ev('07:30','Over-promised','Promised a callback "today"',chipTag('Over-promised'))];
+  Object.assign(a.rca, {q1:'yes', q2:'yes', q3:'no', g2:'yes', p:parseKey(chipTag('Wrong info given')), pLens:'Knowledge', pExplain:'Did not know the dispute timeline, gave wrong info', pEvidence:[a.events[2].id, a.events[3].id],
+    whys:['Customer got the wrong timeline','Advocate guessed the timeline','Did not check the KB article','Not sure where the article is','']});
 
-  const b = mk();
+  const b = newScrub();
   Object.assign(b, {sample:true, status:'complete', advocate:'Sample Advocate B', callRef:'SAMPLE-002', date:addDays(t, -5), callLength:'22:05',
     comment:'(FAKE) Customer was put on a long hold, then transferred and had to start over.'});
-  b.verif = sampleVerif(['done','missed','done']); b.verif[1] && (b.verif[1].ts = '00:55');
-  b.events = [
-    {id:uid(), ts:'00:55', chip:'', note:'Skipped verification step 2 (KB flow unclear for this call type)', driver:'Policy', positive:false},
-    {id:uid(), ts:'03:30', chip:'Long hold no check-back', note:'4 min hold, no check-back', driver:'Handle/hold time', positive:false},
-    {id:uid(), ts:'08:15', chip:'Unneeded transfer', note:'Transferred to cards team; KB pointed to wrong queue', driver:'Transfer', positive:false},
-    {id:uid(), ts:'09:00', chip:'Dead air', note:'', driver:'Handle/hold time', positive:false}
-  ];
-  Object.assign(b.rca, {q1:'yes', q2:'no', q3:'no', g2:'partly', primaryType:'Process', pSub:'Procedure gap', pExplain:'KB has two conflicting flows for this call type, sends to wrong queue',
-    pEvidence:[b.events[0].id, b.events[2].id], sSub:'Knowledge', sExplain:'Did not know the hold check-back standard', sEvidence:[b.events[1].id],
+  b.verif = sampleVerif(['done','missed','done']); if (b.verif[1]) b.verif[1].ts = '00:55';
+  const kb = chipTag('KB unclear/missing');
+  b.events = [ev('00:55','KB unclear/missing','Skipped verification step 2: KB flow unclear for this call type',kb), ev('03:30','Long hold no check-back','4 min hold, no check-back',chipTag('Long hold no check-back')),
+    ev('06:40','Wrong info given','Told customer the cards team handles this (it does not)',chipTag('Wrong info given')), ev('08:15','Unneeded transfer','Transferred to cards team',chipTag('Unneeded transfer'))];
+  Object.assign(b.rca, {q1:'yes', q2:'yes', q3:'no', g2:'partly', primarySide:'nc', p:parseKey(kb), pExplain:'Topic missing from KB; two conflicting flows', pEvidence:[b.events[0].id],
+    s:parseKey(chipTag('Wrong info given')), sLens:'Knowledge', sExplain:'Gave wrong team info, leading to a transfer', sEvidence:[b.events[2].id, b.events[3].id],
     justification:'KB article for this call type lists two different verification flows; step 2 is missing from one of them.'});
 
-  const c = mk();
+  const c = newScrub();
   Object.assign(c, {sample:true, status:'complete', advocate:'Sample Advocate C', callRef:'SAMPLE-003', date:addDays(t, -9), callLength:'08:40',
-    comment:'(FAKE) Customer is angry about the overdraft fee and says the bank is unfair.'});
+    comment:'(FAKE) Customer is angry about the overdraft handling and says the bank is unfair.'});
   c.verif = sampleVerif([]);
-  c.events = [
-    {id:uid(), ts:'01:15', chip:'Good handling', note:'Explained fee policy clearly and showed empathy', driver:'', positive:true},
-    {id:uid(), ts:'05:20', chip:'', note:'Customer says the fee itself is unfair', driver:'Policy', positive:false}
-  ];
-  Object.assign(c.rca, {q1:'yes', q2:'yes', ncReason:'Product/fee', ncNote:'Overdraft fee correctly applied per policy'});
+  const od = K('POLICY','Risk Policy','Dissatisfied with the handling of negative balances or overdraft-related activities');
+  c.events = [ev('01:15','Good handling','Explained overdraft policy clearly and showed empathy','',true), ev('05:20','','Customer says overdraft rules are unfair',od)];
+  Object.assign(c.rca, {q1:'yes', q2:'yes', q3:'yes', g2:'no', p:parseKey(od), pExplain:'Overdraft handled correctly per policy', pEvidence:[c.events[1].id]});
 
-  [a, b].forEach(s => { s.actions = suggestActions(s); s.actionsKey = actionsKey(s); s.coaching = coachingDefaults(s); });
-  c.actionsKey = actionsKey(c);
+  [a, b, c].forEach(s => { s.actions = suggestActions(s); s.actionsKey = actionsKey(s); if (peopleCause(s)) s.coaching = coachingDefaults(s); });
   return [a, b, c];
 }
 function loadSamples(){
@@ -1186,6 +1377,11 @@ function clearSamples(){
 }
 
 /* ================= Events ================= */
+function setCause(slot, c){
+  const r = cur.rca;
+  r[slot] = {l1:c.l1 || '', l2:c.l2 || '', l3:c.l3 || ''};
+  if (r[slot].l1 !== 'PEOPLE') r[slot + 'Lens'] = '';
+}
 document.addEventListener('click', e => {
   const tip = e.target.closest('.tip');
   if (tip) { e.preventDefault(); e.stopPropagation(); showTip(tip); return; }
@@ -1197,13 +1393,13 @@ document.addEventListener('click', e => {
   switch (act) {
     case 'view': setView(v); break;
     case 'goto': goStep(+v); break;
-    case 'next': {
-      if (step === 4 && gate1(cur).state === 'nc') { if (!r.ncReason) { ui.showErr = true; render(); toast('Pick a Non-controllable reason'); return; } goStep(6); }
+    case 'next':
+      if (step === 4 && gate1(cur).state === 'invalid') { if (!r.invalidKey) { ui.showErr = true; render(); toast('Pick the survey validation reason'); return; } goStep(6); }
       else goStep(step + 1);
       break;
-    }
-    case 'back': goStep(step === 6 && gate1(cur).state === 'nc' ? 4 : step - 1); break;
+    case 'back': goStep(step === 6 && gate1(cur).state === 'invalid' ? 4 : step - 1); break;
     case 'newScrub': startNew(false); break;
+    case 'dismissMig': migratedMsg = ''; render(); break;
     case 'saveDraft': commitScrub(cur.status === 'complete' ? 'complete' : 'draft'); break;
     case 'finish': commitScrub('complete'); break;
     case 'addAdv': {
@@ -1217,52 +1413,68 @@ document.addEventListener('click', e => {
     case 'vstat': { const s = cur.verif[+i]; s.status = s.status === v ? '' : v; touch(); render(); break; }
     case 'allDone': cur.verif.forEach(s => s.status = 'done'); touch(); render(); break;
     case 'reloadSteps': {
-      if (cur.verif.some(s => s.status) && !confirm('Reload steps from Settings? Results already marked on this scrub will be cleared for renamed steps.')) return;
+      if (cur.verif.some(s => s.status) && !confirm('Reload steps from Settings? Results on renamed steps will be cleared.')) return;
       const old = {}; cur.verif.forEach(s => old[s.name] = s);
       cur.verif = DB.settings.verifSteps.map(s => ({name:s.name, critical:!!s.critical, status: old[s.name] ? old[s.name].status : '', ts: old[s.name] ? old[s.name].ts : ''}));
       touch(); render(); break;
     }
     case 'chip': {
       const c = CHIPS.find(x => x.label === v);
-      if (ui.ev.chip === v) { ui.ev.chip = ''; }
-      else { ui.ev.chip = v; ui.ev.driver = c.positive ? '' : (DB.settings.drivers.includes(c.driver) ? c.driver : ui.ev.driver); }
+      if (ui.ev.chip === v) ui.ev.chip = '';
+      else { ui.ev.chip = v; ui.ev.tag = c.positive ? '' : (findRow(c.tag) ? c.tag : ui.ev.tag); }
       ui.evErr = ''; render(); break;
     }
     case 'addEvent': addEvent(); break;
-    case 'delEvent': {
+    case 'delEvent':
       cur.events = cur.events.filter(x => x.id !== id);
       r.pEvidence = r.pEvidence.filter(x => x !== id); r.sEvidence = r.sEvidence.filter(x => x !== id);
       touch(); render(); break;
-    }
     case 'gq': {
       r[i] = v;
       if (i === 'q1' && v === 'no') { r.q2 = ''; r.q3 = ''; }
-      if (i === 'q2' && v === 'yes') r.q3 = '';
+      if (i === 'q2' && v === 'no') r.q3 = '';
       const g = gate1(cur);
-      if (g.state === 'nc' && !r.ncReason) r.ncReason = g.suggest;
-      if (g.state === 'valid' && !r.g2 && hasVerifMiss(cur)) { r.g2 = 'yes'; toast('Gate 2 pre-set to Person because a verification step was missed', 3500); }
-      touch(); render(); break;
-    }
-    case 'ncReason': r.ncReason = v; touch(); render(); break;
-    case 'g2': {
-      r.g2 = v;
-      const {p, sec} = causeTypes(cur);
-      if (!SUBS[p] || !SUBS[p].some(s => s.k === r.pSub)) r.pSub = '';
-      if (!sec || !SUBS[sec].some(s => s.k === r.sSub)) r.sSub = '';
-      touch(); render(); break;
-    }
-    case 'ptype': {
-      if (r.primaryType !== v) {
-        // swap primary/secondary details when the primary side changes
-        const oldP = {sub:r.pSub, ex:r.pExplain, ev:r.pEvidence};
-        r.pSub = SUBS[v].some(s => s.k === r.sSub) ? r.sSub : ''; r.pExplain = r.sExplain; r.pEvidence = r.sEvidence;
-        r.sSub = SUBS[other(v)].some(s => s.k === oldP.sub) ? oldP.sub : ''; r.sExplain = oldP.ex; r.sEvidence = oldP.ev;
-        r.primaryType = v;
+      if (g.state === 'invalid') r.invalidKey = g.suggest;
+      if (g.state === 'valid' && !r.g2 && hasVerifMiss(cur)) {
+        r.g2 = 'yes';
+        if (!causeDone(r.p) && findRow(AUTH_KEY)) setCause('p', parseKey(AUTH_KEY));
+        toast('Pre-set to PEOPLE > Process Adherence because a verification step was missed', 4000);
       }
       touch(); render(); break;
     }
-    case 'psub': r.pSub = v; touch(); render(); break;
-    case 'ssub': r.sSub = v; touch(); render(); break;
+    case 'invalidKey': r.invalidKey = v; touch(); render(); break;
+    case 'g2': {
+      const prevSide = r.g2 === 'yes' ? 'people' : r.g2 === 'no' ? 'nc' : '';
+      if (v === 'partly' && r.g2 !== 'partly') r.primarySide = prevSide || r.primarySide;
+      r.g2 = v;
+      const sd = sides(cur);
+      if (!sd.p || !allowedL1(sd.p).includes(r.p.l1)) setCause('p', sd.p === 'people' ? {l1:'PEOPLE'} : {});
+      if (!sd.sec || !allowedL1(sd.sec).includes(r.s.l1)) setCause('s', sd.sec === 'people' ? {l1:'PEOPLE'} : {});
+      touch(); render(); break;
+    }
+    case 'pside': {
+      if (r.primarySide !== v) {
+        const oldP = {c:r.p, lens:r.pLens, ex:r.pExplain, ev:r.pEvidence};
+        r.p = r.s; r.pLens = r.sLens; r.pExplain = r.sExplain; r.pEvidence = r.sEvidence;
+        r.s = oldP.c; r.sLens = oldP.lens; r.sExplain = oldP.ex; r.sEvidence = oldP.ev;
+        r.primarySide = v;
+        const sd = sides(cur);
+        if (!allowedL1(sd.p).includes(r.p.l1)) setCause('p', sd.p === 'people' ? {l1:'PEOPLE'} : {});
+        if (!allowedL1(sd.sec).includes(r.s.l1)) setCause('s', sd.sec === 'people' ? {l1:'PEOPLE'} : {});
+      }
+      touch(); render(); break;
+    }
+    case 'pickL1': setCause(i, {l1:v}); touch(); render(); break;
+    case 'pickL2': setCause(i, {l1:r[i].l1, l2:v}); touch(); render(); break;
+    case 'pickL3': r[i].l3 = v; touch(); render(); break;
+    case 'pickLens': r[i + 'Lens'] = r[i + 'Lens'] === v ? '' : v; touch(); render(); break;
+    case 'useTag': {
+      setCause(i, parseKey(v));
+      // also link the events with that tag as evidence
+      const key = i === 'p' ? 'pEvidence' : 'sEvidence';
+      cur.events.forEach(e => { if (e.tag === v && !r[key].includes(e.id)) r[key].push(e.id); });
+      touch(); render(); break;
+    }
     case 'evid': {
       const key = i === 'p' ? 'pEvidence' : 'sEvidence';
       r[key] = r[key].includes(id) ? r[key].filter(x => x !== id) : r[key].concat(id);
@@ -1272,15 +1484,19 @@ document.addEventListener('click', e => {
     case 'addAction': cur.actions.push({id:uid(), role:'', cause:'', action:'', owner:'Mentor', due:addDays(today(), 7), status:'Open', auto:false, edited:true}); touch(); render(); break;
     case 'delAction': cur.actions = cur.actions.filter(a => a.id !== id); touch(); render(); break;
     case 'actStatus': cur.actions[+i].status = v; cur.actions[+i].edited = true; touch(); render(); break;
-    case 'copySummary': copyText(summaryText(cur)); break;
-    case 'copyCoach': copyText(coachingText(cur)); break;
+    case 'copySummary': copyText(summaryText(cur), 'Summary copied'); break;
+    case 'copyCoach': copyText(coachingText(cur), 'Coaching note copied'); break;
+    case 'copyTracker': copyText(trackerValues(cur).map(x => tsvCell(x[1])).join('\t'), 'L1-L4 copied'); break;
+    case 'copyOne': { const tv = trackerValues(cur)[+i]; copyText(tv[1], tv[0] + ' copied'); break; }
+    case 'copyRow': copyText(logRow(cur).map(tsvCell).join('\t'), 'Full row copied'); break;
     case 'regenCoach': cur.coaching = coachingDefaults(cur); touch(); render(); break;
     case 'editScrub': {
       if (dirty && cur && !confirm('Discard unsaved changes to the current scrub?')) return;
       const s = DB.scrubs.find(x => x.id === id); if (!s) return;
       cur = normScrub(clone(s)); step = 1; dirty = false; ui.showErr = false; view = 'scrub'; saveCur(); render(); window.scrollTo(0, 0); break;
     }
-    case 'copyScrub': { const s = DB.scrubs.find(x => x.id === id); if (s) copyText(summaryText(s)); break; }
+    case 'copyScrub': { const s = DB.scrubs.find(x => x.id === id); if (s) copyText(summaryText(s), 'Summary copied'); break; }
+    case 'copyTrackerOf': { const s = DB.scrubs.find(x => x.id === id); if (!s) return; if (!primaryCause(s)) { toast('RCA not finished for this scrub'); return; } copyText(trackerValues(s).map(x => tsvCell(x[1])).join('\t'), 'L1-L4 copied'); break; }
     case 'delScrub': {
       const s = DB.scrubs.find(x => x.id === id); if (!s) return;
       if (!confirm('Delete the scrub for ' + (s.advocate || 'unknown') + ' (' + (s.callRef || s.date) + ')? This cannot be undone.')) return;
@@ -1288,12 +1504,11 @@ document.addEventListener('click', e => {
       if (cur && cur.id === id) { cur = newScrub(); step = 1; dirty = false; lsDel(LS_CUR); }
       render(); toast('Scrub deleted'); break;
     }
-    case 'range': {
+    case 'range':
       if (v === 'clear') ui.filt = {from:'', to:'', adv:''};
       else if (v === '0') { ui.filt.from = ''; ui.filt.to = ''; }
       else { ui.filt.from = addDays(today(), -(+v - 1)); ui.filt.to = today(); }
       render(); break;
-    }
     case 'advView': ui.filt.adv = v; render(); break;
     case 'markDone': {
       const s = DB.scrubs.find(x => x.id === id); if (!s) return;
@@ -1306,26 +1521,45 @@ document.addEventListener('click', e => {
     case 'importJSON': importMode = v || 'merge'; $('#importFile').value = ''; $('#importFile').click(); break;
     case 'loadSample': loadSamples(); break;
     case 'clearSample': clearSamples(); break;
-    case 'clearAll': {
+    case 'clearAll':
       if (!confirm('Delete ALL scrubs and settings on this device? Export a backup first if you need one.')) return;
       if (!confirm('Are you sure? This cannot be undone.')) return;
       DB = defaultDB(); saveDB(); lsDel(LS_CUR); cur = newScrub(); step = 1; dirty = false; render(); toast('All data deleted'); break;
-    }
     case 'sAdd': {
       const arr = DB.settings[v];
-      if (v === 'verifSteps') arr.push({id:uid(), name:'Step ' + (arr.length + 1), critical:false});
-      else arr.push(v === 'drivers' ? 'New driver' : 'New advocate');
+      if (v === 'verifSteps') arr.push({id:uid(), name:'Step ' + (arr.length + 1), critical:false}); else arr.push('New advocate');
       saveDB(); render();
-      const inputs = document.querySelectorAll('[data-sbind^="' + v + '."]');
-      const last = [...inputs].pop(); if (last) { last.focus(); last.select(); }
+      const last = [...document.querySelectorAll('[data-sbind^="' + v + '."]')].pop(); if (last) { last.focus(); last.select(); }
       break;
     }
-    case 'sDel': {
-      const arr = DB.settings[v];
-      if (v === 'verifSteps' && arr.length === 1 && !confirm('Remove the last verification step?')) return;
-      arr.splice(+i, 1); saveDB(); render(); break;
-    }
+    case 'sDel':
+      if (v === 'verifSteps' && DB.settings.verifSteps.length === 1 && !confirm('Remove the last verification step?')) return;
+      DB.settings[v].splice(+i, 1); saveDB(); render(); break;
     case 'sMove': { const arr = DB.settings[v], k = +i; if (k > 0) { [arr[k-1], arr[k]] = [arr[k], arr[k-1]]; saveDB(); render(); } break; }
+    case 'fwAdd': {
+      const l1 = ui.fwFilter || 'PEOPLE';
+      fw().push({l1, l2:'New category', l3:'New root cause detail', l4: l1 === 'PEOPLE' ? CTRL : NCTRL});
+      DB.settings.frameworkName = DB.settings.frameworkName.replace(/ \(edited\)$/, '') + ' (edited)';
+      ui.fwQ = ''; saveDB(); render();
+      const last = [...document.querySelectorAll('[data-fw$=".l2"]')].pop(); if (last) { last.focus(); last.select(); }
+      break;
+    }
+    case 'fwDel': {
+      const row = fw()[+i]; if (!row) return;
+      if (!confirm('Delete this row?\n' + row.l1 + ' > ' + row.l2 + ' > ' + row.l3)) return;
+      fw().splice(+i, 1); DB.settings.frameworkName = DB.settings.frameworkName.replace(/ \(edited\)$/, '') + ' (edited)'; saveDB(); render(); break;
+    }
+    case 'fwReset':
+      if (!confirm('Reset the RCA framework to ' + FW_NAME + ' (82 rows)? Your edits will be lost. Saved scrubs are not changed.')) return;
+      DB.settings.framework = defaultFramework(); DB.settings.frameworkName = FW_NAME; saveDB(); ui.fwMsg = 'Framework reset to ' + FW_NAME + '.'; render(); break;
+    case 'fwPaste': {
+      const rows = parseFwPaste(ui.fwPaste);
+      if (rows.length < 5) { toast('Found only ' + rows.length + ' valid rows. Copy columns A-D from the Framework sheet.', 4000); return; }
+      if (rows.some(rr => hasPII(rr.l1 + rr.l2 + rr.l3))) { toast('Pasted rows contain 6+ digit numbers. Check the paste.', 4000); return; }
+      if (!confirm('Replace the framework with ' + rows.length + ' pasted rows? Saved scrubs are not changed.')) return;
+      DB.settings.framework = rows; DB.settings.frameworkName = (ui.fwName || '').trim() || ('Pasted framework ' + today());
+      ui.fwPaste = ''; ui.fwName = ''; saveDB(); ui.fwMsg = 'Loaded ' + rows.length + ' rows as "' + DB.settings.frameworkName + '".'; render(); break;
+    }
   }
 });
 document.addEventListener('keydown', e => {
@@ -1334,14 +1568,13 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') hideTip();
 });
 function addEvent(){
-  const f = ui.ev;
-  const ts = normTs(f.ts);
-  if (!ts) { ui.evErr = 'Enter the time as mm:ss (for example 03:15).'; render(); $('#evTs') && $('#evTs').focus(); return; }
+  const f = ui.ev, ts = normTs(f.ts);
+  if (!ts) { ui.evErr = 'Enter the time as mm:ss (for example 03:15).'; render(); const t = $('#evTs'); if (t) t.focus(); return; }
   if (!f.chip && !f.note.trim()) { ui.evErr = 'Pick a chip or type a note.'; render(); return; }
   if (hasPII(f.note)) { ui.evErr = 'Remove the 6+ digit number from the note before adding.'; render(); return; }
-  const c = CHIPS.find(x => x.label === f.chip);
-  cur.events.push({id:uid(), ts, chip:f.chip, note:f.note.trim(), driver: c && c.positive ? '' : f.driver, positive: !!(c && c.positive)});
-  ui.ev = {ts:'', chip:'', note:'', driver:''}; ui.evErr = '';
+  const c = CHIPS.find(x => x.label === f.chip), positive = !!(c && c.positive);
+  cur.events.push({id:uid(), ts, chip:f.chip, note:f.note.trim(), tag: positive ? '' : f.tag, positive});
+  ui.ev = {ts:'', chip:'', note:'', tag:''}; ui.evErr = '';
   touch(); render();
   const t = $('#evTs'); if (t) t.focus();
 }
@@ -1357,17 +1590,27 @@ document.addEventListener('input', e => {
   if (el.dataset.ui) {
     const k = el.dataset.ui;
     if (k === 'histQ') { ui.histQ = el.value; renderHistList(); return; }
+    if (k === 'fwQ') { ui.fwQ = el.value; renderFwList(); return; }
+    if (k === 'fwPaste' || k === 'fwName') { ui[k] = el.value; return; }
+    if (k === 'fwFilter') return;
     if (k === 'newAdv') { ui.newAdv = el.value; markPII(el); return; }
     ui.ev[k] = el.value;
     if (k === 'note') markPII(el);
     return;
   }
   if (el.dataset.sbind) {
-    if (markPII(el)) { return; } // do not persist
-    const val = el.value;
+    if (markPII(el)) return; // not persisted
     const parts = el.dataset.sbind.split('.');
-    if (parts[0] === 'verifSteps') DB.settings.verifSteps[+parts[1]].name = val;
-    else DB.settings[parts[0]][+parts[1]] = val;
+    if (parts[0] === 'verifSteps') DB.settings.verifSteps[+parts[1]].name = el.value;
+    else DB.settings[parts[0]][+parts[1]] = el.value;
+    saveDB(); return;
+  }
+  if (el.dataset.fw && el.tagName === 'INPUT') {
+    if (markPII(el)) return;
+    const [idx, field] = el.dataset.fw.split('.');
+    const row = fw()[+idx]; if (!row) return;
+    row[field] = field === 'l1' ? el.value.trim().toUpperCase() : el.value.trim();
+    if (!/ \(edited\)$/.test(DB.settings.frameworkName)) DB.settings.frameworkName += ' (edited)';
     saveDB();
   }
 });
@@ -1385,26 +1628,27 @@ document.addEventListener('change', e => {
     if (el.dataset.rr || el.tagName === 'SELECT') render();
     return;
   }
-  if (el.dataset.ui === 'driver') { ui.ev.driver = el.value; return; }
+  if (el.dataset.ui === 'tag') { ui.ev.tag = el.value; return; }
+  if (el.dataset.ui === 'fwFilter') { ui.fwFilter = el.value; renderFwList(); return; }
   if (el.dataset.filt) { ui.filt[el.dataset.filt] = el.value; render(); return; }
   if (el.dataset.scheck != null) { DB.settings.verifSteps[+el.dataset.scheck].critical = el.checked; saveDB(); return; }
+  if (el.dataset.fw && el.tagName === 'SELECT') { const [idx] = el.dataset.fw.split('.'); fw()[+idx].l4 = el.value; if (!/ \(edited\)$/.test(DB.settings.frameworkName)) DB.settings.frameworkName += ' (edited)'; saveDB(); return; }
   if (el.dataset.sbind) {
     if (hasPII(el.value)) { toast('Not saved: remove the 6+ digit number'); return; }
     const parts = el.dataset.sbind.split('.');
-    if (parts[0] === 'advocates' || parts[0] === 'drivers') { DB.settings[parts[0]][+parts[1]] = el.value.trim(); saveDB(); }
+    if (parts[0] === 'advocates') { DB.settings.advocates[+parts[1]] = el.value.trim(); saveDB(); }
   }
 });
 
 /* ================= Tooltips ================= */
 const tipbox = $('#tipbox');
-let tipFor = null;
-let tipShownAt = 0;
+let tipFor = null, tipShownAt = 0;
 function showTip(el){
   tipFor = el; tipShownAt = Date.now();
   tipbox.textContent = el.dataset.tip;
   tipbox.style.display = 'block';
   const r = el.getBoundingClientRect(), w = tipbox.offsetWidth, h = tipbox.offsetHeight;
-  let left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
+  const left = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), window.innerWidth - w - 8);
   let top = r.bottom + 8;
   if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 8);
   tipbox.style.left = left + 'px'; tipbox.style.top = top + 'px';
@@ -1421,12 +1665,9 @@ window.addEventListener('beforeunload', () => { clearTimeout(curTimer); saveCur(
 loadDB();
 (function restore(){
   const raw = lsGet(LS_CUR);
-  if (raw) {
-    try { const o = JSON.parse(raw); cur = normScrub(o.cur); step = o.step || 1; dirty = !!o.dirty; } catch(e) { cur = null; }
-  }
+  if (raw) { try { const o = JSON.parse(raw); cur = normScrub(o.cur); step = o.step || 1; dirty = !!o.dirty; } catch(e) { cur = null; } }
   if (!cur) cur = newScrub();
-  // test that storage really works
-  if (!lsSet('dsatScrub.test', '1')) storageOK = false; else lsDel('dsatScrub.test');
+  if (!lsSet('dsatScrubBuddy.test', '1')) storageOK = false; else lsDel('dsatScrubBuddy.test');
 })();
 render();
 </script>
