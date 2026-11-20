@@ -175,12 +175,13 @@ input:focus,select:focus,textarea:focus,button:focus-visible,[role=button]:focus
 .chip.pos.sel{background:var(--ok);border-color:var(--ok);color:#fff}
 
 /* timeline */
-.ev{display:grid;grid-template-columns:92px 1fr;gap:8px 10px;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;align-items:start}
+.ev{display:grid;grid-template-columns:92px minmax(0,1fr);gap:8px 10px;border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;align-items:start}
 .ev.pos{border-left:5px solid var(--ok)}
 .ev.neg{border-left:5px solid var(--bad)}
-.ev .evbody{display:grid;gap:6px;min-width:0}
+.ev .evbody{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;min-width:0}
 .ev .evctl{display:flex;gap:8px;flex-wrap:wrap}
-.ev .evctl select{flex:1 1 200px;width:auto;min-width:0}
+.ev .evctl select{flex:1 1 200px;width:auto;min-width:0;max-width:100%}
+.ev .evbody input{min-width:0}
 .evlbl{font-weight:600}
 .chk{display:flex;gap:10px;align-items:center;width:100%;text-align:left;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;cursor:pointer;margin-bottom:6px}
 .chk .box{width:22px;height:22px;border:2px solid var(--muted);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;flex:none;font-weight:800}
@@ -228,7 +229,7 @@ th{color:var(--muted);font-weight:600;white-space:nowrap}
 .srow input[type=text]{flex:1 1 180px;width:auto}
 .srow .crit{display:flex;align-items:center;gap:6px;min-height:44px;font-weight:600;cursor:pointer}
 .srow .crit input{width:22px;height:22px}
-.fwrow{display:grid;grid-template-columns:150px 200px 1fr 150px auto;gap:6px;margin-bottom:6px;align-items:center}
+.fwrow{display:grid;grid-template-columns:180px 220px 1fr 160px auto;gap:6px;margin-bottom:6px;align-items:center}
 .fwrow input,.fwrow select{min-height:40px;padding:6px 8px;font-size:.9rem}
 @media (max-width:760px){.fwrow{grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;padding:8px}.fwrow .l3{grid-column:1 / -1}}
 
@@ -260,6 +261,71 @@ details summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;alig
 .whys input{margin-bottom:6px}
 .sr{position:absolute;left:-9999px}
 @media print{header.top,.wfoot,.privacy{display:none}}
+
+/* ===== Desktop / PC layout (1100px and wider) ===== */
+.wside,.only-wide{display:none}
+.cols2{display:block}
+.actrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.histtbl td{vertical-align:middle}
+.histtbl .acts{white-space:nowrap}
+.histtbl tbody tr:hover{background:var(--soft)}
+.histtbl td.nw,.histtbl th{white-space:nowrap}
+.histtbl .l23{min-width:190px;max-width:420px}
+.histtbl .acts .btn{padding:0 8px}
+.histtbl .xl{display:none}
+@media (min-width:1700px){.histtbl .xl{display:table-cell}}
+.histtbl .cmt{max-width:260px;color:var(--muted);font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (min-width:1100px){
+  .wrap{max-width:1440px;padding:0 28px}
+  main{padding-top:20px}
+  .only-wide{display:block}
+  .only-narrow{display:none!important}
+  .wiz{display:grid;grid-template-columns:260px minmax(0,1fr);gap:22px;align-items:start}
+  .wside{display:block;position:sticky;top:76px;max-height:calc(100vh - 160px);overflow:auto}
+  #app .progress{display:none}
+  .vsteps{list-style:none;margin:0 0 14px;padding:0;display:grid;gap:6px}
+  .vsteps button{width:100%;display:flex;align-items:center;gap:10px;min-height:44px;padding:6px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;font-weight:600;text-align:left;cursor:pointer}
+  .vsteps button:hover{border-color:var(--primary)}
+  .vsteps .num{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--soft);font-size:.85rem;flex:none}
+  .vsteps .done .num{background:var(--ok-bg);color:var(--ok)}
+  .vsteps button[aria-current="step"]{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
+  .vsteps button[aria-current="step"] .num{background:var(--primary-ink);color:var(--primary)}
+  .glance{font-size:.88rem}
+  .glance dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 10px}
+  .glance dt{color:var(--muted)}
+  .glance dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+  .glance .kbdlist{margin:0;padding-left:1rem;color:var(--muted);font-size:.82rem}
+  .cols2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+  .cols2.tl{grid-template-columns:minmax(380px,5fr) minmax(0,6fr)}
+  .cols2 .sticky{position:sticky;top:76px}
+  .cols2 > div > .card:last-child{margin-bottom:0}
+  .opts.one{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .opts{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+  .actrow{grid-template-columns:minmax(0,2.4fr) minmax(0,1fr) 170px 170px;align-items:end}
+  .act label.f{margin-top:0}
+  .grid3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}
+  .setgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 18px;align-items:start}
+  .setgrid .full{grid-column:1 / -1}
+  .tiles{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .grid2.dash3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .wfoot .wrap{justify-content:flex-end}
+  .wfoot .sp{display:none}
+  .wfoot .btn[data-act="back"]{margin-right:auto}
+  .summary{min-height:380px}
+  #toast{bottom:84px}
+}
+@media (min-width:1100px) and (pointer:fine){
+  input[type=text],input[type=date],input[type=search],select,textarea{min-height:38px;padding:7px 10px}
+  .btn{min-height:38px}
+  .btn.sm{min-height:32px}
+  .seg button{min-height:38px}
+  .chip{min-height:34px}
+  .opt{min-height:46px;padding:10px 42px 10px 12px}
+  .chk{min-height:38px;padding:6px 10px}
+  nav.tabs button{min-height:38px}
+  label.f{margin:8px 0 3px}
+  .card{padding:16px 18px}
+}
 </style>
 </head>
 <body>
@@ -652,7 +718,7 @@ function saveStateHTML(){
   if (saved) return '<span class="savestate saved">&#10003; Saved' + (saved.status === 'complete' ? '' : ' as draft') + '</span>';
   return '';
 }
-function updateSaveState(){ const el = $('#saveState'); if (el) el.innerHTML = saveStateHTML(); }
+function updateSaveState(){ document.querySelectorAll('.saveState').forEach(el => el.innerHTML = saveStateHTML()); }
 function saveCur(){
   if (!cur) return;
   if (piiScan(cur).length) return; // never persist suspected account numbers
@@ -1090,18 +1156,34 @@ function stepDone(n){
   return false;
 }
 const SHORTCUTS = 'Keyboard shortcuts: Alt+Right = Next, Alt+Left = Back, Alt+1 to Alt+6 = go to step, Ctrl+S = Save draft, Alt+T = put the timer time into the time box (Step 3), Alt+P = start/pause the timer, Enter in the note box = Add event.';
+function glanceHTML(){
+  const v = verifResult(cur), p = primaryCause(cur), g = gate1(cur);
+  const open = cur.actions.filter(a => a.status !== 'Done').length;
+  const row = (k, val) => '<dt>' + k + '</dt><dd>' + (val || '<span class="muted">-</span>') + '</dd>';
+  return '<div class="card glance"><h3 style="margin-top:0">At a glance</h3><dl>' +
+    row('Advocate', esc(cur.advocate)) + row('Call', esc(cur.callRef)) + row('Date', esc(cur.date)) +
+    row('Verification', '<span class="badge ' + (v.cls === 'none' ? '' : v.cls) + '">' + esc(v.code) + '</span>') +
+    row('Survey', g.state === 'valid' ? 'Valid' + (g.review ? ' (flagged)' : '') : g.state === 'invalid' ? 'Not valid' : '') +
+    row('L1', p ? l1Badge(p.l1) : '') + row('L2', p ? esc(p.l2) : '') + row('L3', p ? esc(p.l3) : '') + row('L4', p ? l4Badge(p.l4) : '') +
+    row('Evidence', String(liveEvidence(cur, cur.rca.pEvidence).length)) + row('Events', String(cur.events.length)) + row('Open actions', String(open)) +
+    '</dl><div class="saveState" style="margin-top:10px">' + saveStateHTML() + '</div></div>' +
+    '<div class="card glance"><h3 style="margin-top:0">Shortcuts</h3><ul class="kbdlist">' +
+    '<li><span class="kbd">Alt</span>+<span class="kbd">&rarr;</span> / <span class="kbd">&larr;</span> next / back</li><li><span class="kbd">Alt</span>+<span class="kbd">1</span>-<span class="kbd">6</span> go to step</li>' +
+    '<li><span class="kbd">Ctrl</span>+<span class="kbd">S</span> save draft</li><li><span class="kbd">Alt</span>+<span class="kbd">P</span> start/pause timer</li><li><span class="kbd">Alt</span>+<span class="kbd">T</span> use timer time</li><li><span class="kbd">Enter</span> in note = add event</li></ul></div>';
+}
 function renderWizard(){
   const pct = Math.round(step / 6 * 100);
   let h = '';
   if (migratedMsg) h += '<div class="notice info">' + esc(migratedMsg) + ' <button class="btn sm" data-act="dismissMig">OK</button></div>';
   h += '<div class="row" style="margin-bottom:10px"><h1 class="grow" style="font-size:1.3rem;margin:0">' +
     (DB.scrubs.some(x => x.id === cur.id) ? 'Editing scrub' : 'New scrub') +
-    (cur.callRef ? ' <span class="muted small">' + esc(cur.callRef) + '</span>' : '') + ' <span id="saveState">' + saveStateHTML() + '</span></h1>' +
-    tipBtn(SHORTCUTS, 'Keyboard shortcuts') + '<button class="btn sm" data-act="newScrub">+ Start new scrub</button></div>';
+    (cur.callRef ? ' <span class="muted small">' + esc(cur.callRef) + '</span>' : '') + ' <span class="saveState only-narrow">' + saveStateHTML() + '</span></h1>' +
+    '<span class="only-narrow">' + tipBtn(SHORTCUTS, 'Keyboard shortcuts') + '</span><button class="btn sm" data-act="newScrub">+ Start new scrub</button></div>';
   h += '<div class="progress" aria-label="Progress"><div class="pbar"><span style="width:' + pct + '%"></span></div><ol class="steps">' +
     STEP_NAMES.map((n,i) => '<li><button data-act="goto" data-v="' + (i+1) + '"' + (step === i+1 ? ' aria-current="step"' : '') + ' class="' + (i+1 < step || stepDone(i+1) ? 'done' : '') + '"><b>' + (i+1) + (stepDone(i+1) ? ' <span class="ok" aria-label="done">&#10003;</span>' : '') + '</b><span>' + n + '</span></button></li>').join('') +
     '</ol></div>';
-  h += [null, step1, step2, step3, step4, step5, step6][step]();
+  const side = '<aside class="wside" aria-label="Steps"><ol class="vsteps">' + STEP_NAMES.map((n,i) => '<li><button data-act="goto" data-v="' + (i+1) + '"' + (step === i+1 ? ' aria-current="step"' : '') + ' class="' + (stepDone(i+1) ? 'done' : '') + '"><span class="num">' + (stepDone(i+1) ? '&#10003;' : (i+1)) + '</span>' + n + '</button></li>').join('') + '</ol>' + glanceHTML() + '</aside>';
+  h += '<div class="wiz">' + side + '<div class="wmain">' + [null, step1, step2, step3, step4, step5, step6][step]() + '</div></div>';
   return h;
 }
 function renderFooter(){
@@ -1131,7 +1213,7 @@ function step1(){
     h += '<div class="row" style="margin-top:8px"><input type="text" class="grow' + (bad ? ' pii-bad' : '') + '" data-ui="newAdv" value="' + esc(ui.newAdv) + '" placeholder="New advocate name" autocomplete="off" aria-label="New advocate name">' +
       '<button class="btn primary" data-act="addAdv">Add</button><button class="btn" data-act="cancelAdv">Cancel</button></div>' + (bad ? piiMsgHTML : '');
   }
-  h += '<div class="grid2"><div><label class="f" for="f_ref">Call reference ID</label>' + txt('callRef', cur.callRef, {a:{id:'f_ref', placeholder:'e.g. CR-ABC-12'}}) + '</div>' +
+  h += '<div class="grid2 grid3"><div><label class="f" for="f_ref">Call reference ID</label>' + txt('callRef', cur.callRef, {a:{id:'f_ref', placeholder:'e.g. CR-ABC-12'}}) + '</div>' +
     '<div><label class="f" for="f_date">Date</label><input type="date" id="f_date" data-bind="date" value="' + esc(cur.date) + '"></div>' +
     '<div><label class="f" for="f_len">Call length <span class="hint">(mm:ss)</span></label>' + txt('callLength', cur.callLength, {a:{id:'f_len', placeholder:'12:30', inputmode:'numeric'}}) + '</div></div>';
   h += '<label class="f" for="f_com">DSAT survey comment <span class="hint">(paraphrased, no names or numbers)</span></label>' +
@@ -1176,7 +1258,7 @@ function timerHTML(){
 }
 function step3(){
   const e = ui.ev;
-  let h = '<div class="card"><h2>Step 3: Timeline of what went wrong</h2><p class="muted small">Pause the recording, type the time you see in the player, tap a chip and/or write a note. Chips pre-fill the matching RCA Matrix tag (L1 &gt; L2 &gt; L3), which you can change.</p>';
+  let h = '<div class="cols2 tl"><div class="sticky"><div class="card"><h2>Step 3: Timeline of what went wrong</h2><p class="muted small">Pause the recording, type the time you see in the player, tap a chip and/or write a note. Chips pre-fill the matching RCA Matrix tag (L1 &gt; L2 &gt; L3), which you can change.</p>';
   h += timerHTML();
   h += '<div class="row" style="align-items:flex-end"><div style="flex:0 0 120px"><label class="f" for="evTs">Time (mm:ss)</label><input type="text" id="evTs" data-ui="ts" value="' + esc(e.ts) + '" placeholder="' + (timerMs() ? 'timer' : '03:15') + '" inputmode="numeric" autocomplete="off"></div>' +
     '<button class="btn" data-act="useTimer">&#9201; Use timer</button></div>' +
@@ -1187,9 +1269,9 @@ function step3(){
   const pos = CHIPS.some(c => c.positive && c.label === e.chip);
   h += '<label class="f" for="evTag">RCA Matrix tag <span class="hint">(L1 &gt; L2 &gt; L3, optional)</span></label><select id="evTag" data-ui="tag"' + (pos ? ' disabled' : '') + '>' + tagOptions(e.tag) + '</select>';
   if (ui.evErr) h += '<div class="notice bad">' + esc(ui.evErr) + '</div>';
-  h += '<div style="margin-top:10px"><button class="btn primary" data-act="addEvent">+ Add event</button></div></div>';
+  h += '<div style="margin-top:10px"><button class="btn primary" data-act="addEvent">+ Add event</button></div></div></div>';
 
-  h += '<div class="card"><h2>Events (' + cur.events.length + ')</h2>';
+  h += '<div><div class="card"><h2>Events (' + cur.events.length + ')</h2>';
   if (!cur.events.length) h += '<p class="muted">No events yet.</p>';
   sortedEvents(cur).forEach(ev => {
     const i = cur.events.indexOf(ev), t = parseKey(ev.tag);
@@ -1199,7 +1281,7 @@ function step3(){
       '<div class="evctl">' + (ev.positive ? '' : '<select data-bind="events.' + i + '.tag" aria-label="RCA Matrix tag">' + tagOptions(ev.tag) + '</select>') +
       '<button class="btn sm danger" data-act="delEvent" data-id="' + ev.id + '">Delete</button></div></div></div>';
   });
-  return h + '</div>';
+  return h + '</div></div></div>';
 }
 
 function ynRow(key, val){
@@ -1343,8 +1425,8 @@ function step5(){
   h += '<datalist id="owners">' + OWNERS.map(o => '<option value="' + esc(o) + '">').join('') + '</datalist>';
   cur.actions.forEach((a,i) => {
     h += '<div class="act"><div class="row" style="margin-bottom:6px"><b class="grow">' + esc(a.cause ? a.role + ': ' + a.cause : 'Custom action') + '</b><button class="btn sm danger" data-act="delAction" data-id="' + a.id + '">Delete</button></div>' +
-      '<label class="f">Action</label>' + txt('actions.' + i + '.action', a.action) +
-      '<div class="grid2"><div><label class="f">Owner</label>' + txt('actions.' + i + '.owner', a.owner, {a:{list:'owners'}}) + '</div>' +
+      '<div class="actrow"><div><label class="f">Action</label>' + txt('actions.' + i + '.action', a.action) + '</div>' +
+      '<div><label class="f">Owner</label>' + txt('actions.' + i + '.owner', a.owner, {a:{list:'owners'}}) + '</div>' +
       '<div><label class="f">Due date</label><input type="date" data-bind="actions.' + i + '.due" value="' + esc(a.due) + '"></div>' +
       '<div><label class="f">Status</label><div class="seg">' + ['Open','Done'].map(s => '<button class="' + (a.status === s ? 'sel' + (s === 'Done' ? ' ok' : '') : '') + '" data-act="actStatus" data-i="' + i + '" data-v="' + s + '" aria-pressed="' + (a.status === s) + '">' + s + '</button>').join('') + '</div></div></div></div>';
   });
@@ -1374,6 +1456,7 @@ function step6(){
   if (cur.status === 'complete' && !dirty && DB.scrubs.some(x => x.id === cur.id)) h += '<div class="notice ok"><b>&#10003; Saved.</b> Copy L1-L4 into your tracker, then: <div class="row" style="margin-top:8px"><button class="btn sm primary" data-act="nextScrub" data-v="same">Next scrub: same advocate</button><button class="btn sm" data-act="nextScrub">Next scrub: new advocate</button></div></div>';
   if (errs.length) h += '<div class="notice ' + (ui.showErr ? 'bad' : 'warn') + '"><b>Not finished yet:</b><ul>' + errs.map(e => '<li>' + esc(e) + '</li>').join('') + '</ul></div>';
   const tv = trackerValues(cur);
+  h += '<div class="cols2"><div>';
   h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">For your RCA Matrix tracker</h2><button class="btn primary" data-act="copyTracker"' + (tv[0][1] ? '' : ' disabled') + '>Copy L1-L4 for Excel</button></div>' +
     '<p class="muted small">Values match the ' + esc(DB.settings.frameworkName) + ' exactly. "Copy L1-L4 for Excel" pastes into 4 cells side by side. "Copy full row" pastes the same columns as the CSV export.</p>' +
     '<div class="tracker">' + tv.map(([k,v],i) => '<div class="k">' + esc(k) + '</div><div class="v">' + (v ? (i === 0 ? l1Badge(v) : i === 3 ? l4Badge(v) : esc(v)) : '<span class="muted">-</span>') + '</div><div><button class="btn sm" data-act="copyOne" data-i="' + i + '"' + (v ? '' : ' disabled') + '>Copy</button></div>').join('') + '</div>' +
@@ -1381,6 +1464,8 @@ function step6(){
   h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">RCA summary</h2><button class="btn primary" data-act="copySummary">Copy summary</button></div>' +
     '<p class="muted small">Paste-ready. Updates from your answers in Steps 1-5.</p>' +
     '<textarea class="summary" id="summaryBox" readonly aria-label="RCA summary">' + esc(summaryText(cur)) + '</textarea></div>';
+  h += '</div><div>';
+  if (!pc) h += '<div class="card only-wide"><h2>Coaching note</h2><p class="muted">No coaching note: the Primary and Secondary causes are ' + esc(NCTRL) + '.</p></div>';
   if (pc) {
     h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">Coaching note</h2><button class="btn sm" data-act="regenCoach">Regenerate</button><button class="btn primary" data-act="copyCoach">Copy coaching note</button></div>' +
       '<p class="muted small">Focus: ' + esc(pc.l2 + ' - ' + pc.l3) + (pc.lens ? ' [' + esc(pc.lens) + ']' : '') + '</p>' +
@@ -1388,10 +1473,14 @@ function step6(){
       '<label class="f" for="c_fix">What to fix</label>' + area('coaching.fix', cur.coaching.fix, {a:{id:'c_fix'}}) +
       '<label class="f" for="c_tip">Tip for next call</label>' + area('coaching.tip', cur.coaching.tip, {a:{id:'c_tip'}}) + polishPanel() + '</div>';
   }
+  h += '</div></div>';
   return h;
 }
 
 /* ================= History ================= */
+const WIDE = window.matchMedia('(min-width:1100px)');
+const isWide = () => WIDE.matches;
+(WIDE.addEventListener ? WIDE.addEventListener.bind(WIDE, 'change') : WIDE.addListener.bind(WIDE))(() => { if (view === 'history') renderHistList(); });
 function renderHistory(){
   return '<div class="card"><div class="row"><h1 class="grow" style="font-size:1.3rem;margin:0">Scrub history</h1>' +
     '<button class="btn sm" data-act="exportCSV">Export CSV</button><button class="btn sm" data-act="exportJSON">Export JSON</button><button class="btn sm" data-act="importJSON" data-v="merge">Import JSON</button></div>' +
@@ -1414,6 +1503,18 @@ function renderHistList(){
     return [s.advocate, s.callRef, s.comment, s.date, p.l1, p.l2, p.l3, p.l4, c.l1, c.l2, c.l3, p.lens, verifResult(s).code, s.status, s.sample ? 'sample' : ''].join(' ').toLowerCase().includes(q);
   }).sort(sorters[ui.histSort] || sorters.new);
   if (!list.length) { el.innerHTML = '<div class="card muted">' + (DB.scrubs.length ? 'No scrubs match your search or filter.' : 'No saved scrubs yet. Start one in the Scrub tab, or load sample data in Settings.') + '</div>'; return; }
+  if (isWide()) {
+    el.innerHTML = '<div class="card"><p class="muted small" style="margin-top:0">' + list.length + ' scrub(s)</p><div class="tbl-wrap"><table class="histtbl"><thead><tr><th>Date</th><th>Advocate</th><th>Call ref</th><th>Verif</th><th>L1</th><th>L2 &gt; L3</th><th>L4</th><th>Open</th><th class="xl">DSAT comment</th><th></th></tr></thead><tbody>' +
+      list.map(s => { const p = primaryCause(s), v = verifResult(s), open = s.actions.filter(a => a.status !== 'Done').length;
+        return '<tr><td class="nw">' + esc(s.date) + '</td><td><b>' + esc(s.advocate || '-') + '</b></td><td class="nw" title="' + esc(s.comment) + '">' + esc(s.callRef || '-') + (s.status === 'complete' ? '' : ' <span class="badge warn">Draft</span>') + (s.sample ? ' <span class="muted small">(sample)</span>' : '') + '</td>' +
+          '<td class="nw"><span class="badge ' + (v.cls === 'none' ? '' : v.cls) + '">' + esc(v.code) + '</span></td>' +
+          '<td class="nw">' + (p ? l1Badge(p.l1) : '<span class="muted">-</span>') + '</td><td class="small l23">' + (p ? '<b>' + esc(p.l2) + '</b><br>' + esc(p.l3) : '<span class="muted">RCA not finished</span>') + '</td>' +
+          '<td class="nw">' + (p ? l4Badge(p.l4) : '') + '</td><td class="nw">' + (open || '<span class="muted">0</span>') + '</td>' +
+          '<td class="xl"><div class="cmt" title="' + esc(s.comment) + '">' + esc(s.comment) + '</div></td>' +
+          '<td class="acts"><button class="btn sm" data-act="editScrub" data-id="' + s.id + '">Edit</button> <button class="btn sm" data-act="copyTrackerOf" data-id="' + s.id + '" title="Copy L1-L4 for Excel">L1-L4</button> <button class="btn sm" data-act="copyScrub" data-id="' + s.id + '" title="Copy summary">Summary</button> <button class="btn sm danger" data-act="delScrub" data-id="' + s.id + '" aria-label="Delete">&#10005;</button></td></tr>'; }).join('') +
+      '</tbody></table></div></div>';
+    return;
+  }
   el.innerHTML = '<p class="muted small">' + list.length + ' scrub(s)</p>' + list.map(s => '<div class="hist"><div class="hh"><b>' + esc(s.date) + '</b> <span>' + esc(s.advocate || '(no advocate)') + '</span> <span class="muted">' + esc(s.callRef) + '</span>' +
     (s.status === 'complete' ? '<span class="badge ok">Complete</span>' : '<span class="badge warn">Draft</span>') + (s.sample ? '<span class="badge">Sample</span>' : '') + '</div>' +
     '<div class="hh">' + verifBadge(s) + rcaBadges(s) + '</div>' +
@@ -1535,7 +1636,7 @@ function renderDashboard(){
 function sInput(path, val, label){ return '<input type="text" data-sbind="' + path + '" value="' + esc(val) + '" aria-label="' + esc(label) + '" autocomplete="off">'; }
 function renderSettings(){
   const st = DB.settings;
-  let h = '<h1 style="font-size:1.3rem">Settings</h1>';
+  let h = '<h1 style="font-size:1.3rem">Settings</h1><div class="setgrid">';
   h += '<div class="card"><h2>Verification steps</h2><p class="muted small">Enter your site\'s official verification steps in order. Tick <b>Critical</b> where a miss means Compliance fail. Changes apply to new scrubs (or use "Reload steps from Settings" in Step 2).</p>' +
     st.verifSteps.map((v,i) => '<div class="srow">' + sInput('verifSteps.' + i + '.name', v.name, 'Verification step ' + (i+1)) +
       '<label class="crit"><input type="checkbox" data-scheck="' + i + '"' + (v.critical ? ' checked' : '') + '> Critical</label>' +
@@ -1546,7 +1647,7 @@ function renderSettings(){
   h += '<div class="card"><h2>Advocates</h2><p class="muted small">Names shown in the Step 1 dropdown. Removing a name does not change saved scrubs.</p>' +
     st.advocates.map((v,i) => '<div class="srow">' + sInput('advocates.' + i, v, 'Advocate ' + (i+1)) + '<button class="btn sm danger" data-act="sDel" data-v="advocates" data-i="' + i + '">Remove</button></div>').join('') +
     '<button class="btn" data-act="sAdd" data-v="advocates">+ Add advocate</button></div>';
-  h += '<div class="card"><h2>RCA framework</h2>' +
+  h += '<div class="card full"><h2>RCA framework</h2>' +
     '<p class="muted small">Currently: <b>' + esc(st.frameworkName) + '</b> (' + st.framework.length + ' rows, ' + l1List().length + ' Primary Drivers). These are the exact L1 / L2 / L3 / L4 values the tool writes into your tracker. Saved scrubs keep the values they were scrubbed with.</p>' +
     (ui.fwMsg ? '<div class="notice info">' + esc(ui.fwMsg) + '</div>' : '') +
     '<div class="grid2"><div><label class="f" for="fwF">Show L1</label><select id="fwF" data-ui="fwFilter"><option value="">All</option>' + l1List().map(l => '<option' + (ui.fwFilter === l ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select></div>' +
@@ -1565,7 +1666,7 @@ function renderSettings(){
     '<button class="btn" data-act="exportCSV">Export CSV</button><button class="btn" data-act="exportJSON">Export JSON backup</button>' +
     '<button class="btn" data-act="importJSON" data-v="merge">Import JSON (merge)</button><button class="btn" data-act="importJSON" data-v="replace">Import JSON (replace all)</button></div></div>';
   h += '<div class="card"><h2>Danger zone</h2><button class="btn danger" data-act="clearAll">Delete ALL data</button></div>';
-  return h;
+  return h + '</div>';
 }
 function renderFwList(){
   const el = $('#fwList'); if (!el) return;
