@@ -268,6 +268,10 @@ const VSTATUS = [
 const VLABEL = {done:'done', missed:'missed', late:'done late', order:'out of order'};
 const K = (l1, l2, l3) => l1 + '|' + l2 + '|' + l3;
 const AUTH_KEY = K('PEOPLE','Process Adherence','Failed to complete or request authentication when appropriate');
+const PROC_KEY = K('PEOPLE','Process Adherence','Failed to follow established process requirements');
+/* Site verification steps (both critical). Saved browsers get these once via the STEPS_FLAG update in loadDB. */
+const DEFAULT_STEPS = [{name:'Step 1 - Properly Verified', critical:true}, {name:'Step 2 - Checked Alerts and Restrictions', critical:true}];
+const STEPS_FLAG = 'dsatScrubBuddy.stepsV2';
 const CHIPS = [
   {label:'Long hold no check-back', tag:K('PEOPLE','Communication & Professionalism','Failed to set or manage expectations appropriately')},
   {label:'Dead air', tag:K('PEOPLE','Communication & Professionalism','Could have demonstrated greater professionalism')},
@@ -465,8 +469,26 @@ function invalidOptions(){
   if (a && !rows.includes(a)) rows.unshift(a);
   return rows;
 }
-const ncL1s = () => l1List().filter(x => x !== 'PEOPLE' && x !== 'SURVEY VALIDATION');
-const allowedL1 = side => side === 'people' ? ['PEOPLE'] : ncL1s();
+/* Gate 2/3 follow the framework in Settings: the "Yes" side offers rows marked Controllable, the "No" side rows marked Non Controllable.
+   An L1 used only for Gate 1 survey validation is not offered in Gate 3. */
+const sideL4 = side => side === 'people' ? CTRL : NCTRL;
+function gate1OnlyL1s(){
+  const inv = invalidOptions().map(keyOf);
+  return l1List().filter(l1 => fw().filter(r => r.l1 === l1).every(r => inv.includes(keyOf(r))));
+}
+const sideRows = side => { const g1 = gate1OnlyL1s(); return fw().filter(r => r.l4 === sideL4(side) && !g1.includes(r.l1)); };
+const allowedL1 = side => uniq(sideRows(side).map(r => r.l1));
+const sideL2 = (side, l1) => uniq(sideRows(side).filter(r => r.l1 === l1).map(r => r.l2));
+const sideL3 = (side, l1, l2) => sideRows(side).filter(r => r.l1 === l1 && r.l2 === l2);
+const sideName = side => allowedL1(side).join(' / ') || '(no rows marked ' + sideL4(side) + ')';
+/* does the picked cause still fit this side? (partially picked causes are checked by L1/L2 only) */
+function causeFits(c, side){
+  if (!c || !c.l1 || !allowedL1(side).includes(c.l1)) return false;
+  if (c.l2 && !sideL2(side, c.l1).includes(c.l2)) return false;
+  if (c.l3 && !sideL3(side, c.l1, c.l2).some(r => r.l3 === c.l3)) return false;
+  return true;
+}
+const isCtrl = c => !!c && l4For(c) === CTRL;
 
 /* ================= Storage ================= */
 let storageOK = true;
@@ -477,7 +499,7 @@ function showStorageWarn(){ $('#storageWarn').hidden = storageOK; }
 
 function defaultSettings(){
   return {
-    verifSteps: [1,2,3,4,5].map(i => ({id: uid(), name: 'Step ' + i, critical: i <= 2})),
+    verifSteps: DEFAULT_STEPS.map(x => ({id: uid(), name: x.name, critical: x.critical})),
     advocates: [],
     framework: defaultFramework(),
     frameworkName: FW_NAME,
@@ -551,7 +573,14 @@ function migrateV1(o){
 }
 let DB = defaultDB();
 let migratedMsg = '';
-function loadDB(){
+let stepsUpdated = false;
+function applyStepsUpdate(){
+  if (lsGet(STEPS_FLAG)) return;
+  DB.settings.verifSteps = defaultSettings().verifSteps;
+  if (lsSet(STEPS_FLAG, '1')) { saveDB(); stepsUpdated = true; }
+}
+function loadDB(){ loadDBInner(); applyStepsUpdate(); }
+function loadDBInner(){
   const raw = lsGet(LS_DB);
   if (raw) {
     try { const o = JSON.parse(raw); DB = {app:APP, version:2, settings: normSettings(o.settings), scrubs: (o.scrubs || []).map(normScrub)}; }
@@ -600,6 +629,12 @@ function verifDetail(s){
   return parts.length ? parts.join('; ') : 'all steps done';
 }
 const hasVerifMiss = s => (s.verif || []).some(x => x.status === 'missed');
+/* which PEOPLE row a missed step defaults to: identity steps -> authentication, other steps -> process requirements */
+function missKey(s){
+  const names = (s.verif || []).filter(x => x.status === 'missed').map(x => x.name);
+  const k = names.some(n => /verif|authent|identity/i.test(n)) ? AUTH_KEY : PROC_KEY;
+  return findRow(k) ? k : (findRow(AUTH_KEY) ? AUTH_KEY : '');
+}
 function gate1(s){
   const r = s.rca;
   if (r.q1 === 'no') return {state:'invalid', why:'Survey is not about this call', suggest: attributedKey()};
@@ -620,13 +655,13 @@ const causeDone = c => !!(c && c.l1 && c.l2 && c.l3);
 function primaryCause(s){
   const g = gate1(s), r = s.rca;
   if (g.state === 'invalid' && r.invalidKey) { const c = parseKey(r.invalidKey); return Object.assign(c, {l4: l4For(c), explain: r.ncNote, lens:'', evidence: liveEvidence(s, r.pEvidence)}); }
-  if (g.state === 'valid' && causeDone(r.p)) return Object.assign({}, r.p, {l4: l4For(r.p), explain: r.pExplain, lens: r.p.l1 === 'PEOPLE' ? r.pLens : '', evidence: liveEvidence(s, r.pEvidence)});
+  if (g.state === 'valid' && causeDone(r.p)) return Object.assign({}, r.p, {l4: l4For(r.p), explain: r.pExplain, lens: isCtrl(r.p) ? r.pLens : '', evidence: liveEvidence(s, r.pEvidence)});
   return null;
 }
 function secondaryCause(s){
   const r = s.rca;
   if (gate1(s).state !== 'valid' || !sides(s).sec || !causeDone(r.s)) return null;
-  return Object.assign({}, r.s, {l4: l4For(r.s), explain: r.sExplain, lens: r.s.l1 === 'PEOPLE' ? r.sLens : '', evidence: liveEvidence(s, r.sEvidence)});
+  return Object.assign({}, r.s, {l4: l4For(r.s), explain: r.sExplain, lens: isCtrl(r.s) ? r.sLens : '', evidence: liveEvidence(s, r.sEvidence)});
 }
 const ctrlClass = s => { const p = primaryCause(s); return p ? p.l4 : 'Undecided'; };
 const evById = (s, id) => s.events.find(e => e.id === id);
@@ -645,12 +680,14 @@ function step4Errors(s){
   const {p, sec} = sides(s);
   if (!p) { errs.push('Choose which side is Primary.'); return errs; }
   if (!causeDone(r.p)) errs.push('Pick the Primary ' + H_L1 + ', ' + H_L2 + ' and ' + H_L3 + '.');
+  else if (!causeFits(r.p, p)) errs.push('The Primary pick (' + tagShort(keyOf(r.p)) + ') no longer matches your framework settings for this Gate 2 answer. Pick it again.');
   if (!liveEvidence(s, r.pEvidence).length) errs.push('Evidence required: link at least one timeline timestamp to the Primary cause.');
   if (hasVerifMiss(s) && p === 'nc' && r.p.l2) {
-    if (!VERIF_OK_NC(r.p)) errs.push('A verification step was missed, so this defaults to PEOPLE. Non Controllable is only allowed with PROCESS > Workflow / Content / Support Tools or PRODUCT > Flagstar Outage, plus a justification.');
+    if (!VERIF_OK_NC(r.p)) errs.push('A verification step was missed, so this defaults to ' + CTRL + '. Non Controllable is only allowed with PROCESS > Workflow / Content / Support Tools or PRODUCT > Flagstar Outage, plus a justification.');
     else if (!r.justification.trim()) errs.push('Write a justification for why the verification miss is Non Controllable.');
   }
   if (sec && !causeDone(r.s)) errs.push('Pick the Secondary L1, L2 and L3.');
+  else if (sec && !causeFits(r.s, sec)) errs.push('The Secondary pick no longer matches your framework settings. Pick it again.');
   return errs;
 }
 function step1Errors(s){
@@ -676,7 +713,7 @@ function piiScan(s){
   return bad;
 }
 function actionFor(c){
-  if (c.l1 === 'PEOPLE' && c.lens && LENS_ACTION[c.lens]) return LENS_ACTION[c.lens];
+  if (c.l4 === CTRL && c.lens && LENS_ACTION[c.lens]) return LENS_ACTION[c.lens];
   return L2_ACTION[c.l2] || L1_ACTION[c.l1] || {action:'Follow-up', owner:'Mentor'};
 }
 function suggestActions(s){
@@ -695,8 +732,8 @@ function ensureActions(s){
 }
 function peopleCause(s){
   const p = primaryCause(s), c = secondaryCause(s);
-  if (p && p.l1 === 'PEOPLE') return p;
-  if (c && c.l1 === 'PEOPLE') return c;
+  if (p && p.l4 === CTRL) return p;
+  if (c && c.l4 === CTRL) return c;
   return null;
 }
 function coachingDefaults(s){
@@ -821,7 +858,7 @@ function polishFacts(s){
   const evidence = pc.evidence.map(id => evById(s, id)).filter(Boolean).sort((a,b) => tsSec(a.ts) - tsSec(b.ts)).map(e => sentence(evLine(e)));
   const since = s.date ? addDays(s.date, -30) : '';
   const repeats = DB.scrubs.filter(x => x.id !== s.id && x.advocate && x.advocate === s.advocate && (x.date || '') >= since && (x.date || '') <= (s.date || '9999') &&
-    causesOf(x).some(k => k.l1 === 'PEOPLE' && k.l2 === pc.l2)).length;
+    causesOf(x).some(k => k.l4 === CTRL && k.l2 === pc.l2)).length;
   const v = verifResult(s), missed = s.verif.filter(x => x.status === 'missed').map(x => x.name);
   return {
     pc, name: firstName(s.advocate), well,
@@ -1050,7 +1087,7 @@ function step2(){
       VSTATUS.map(s => '<button class="' + s.cls + (v.status === s.k ? ' sel' : '') + '" data-act="vstat" data-i="' + i + '" data-v="' + s.k + '" aria-pressed="' + (v.status === s.k) + '">' + s.label + '</button>').join('') +
       '</div><div><label class="sr" for="vts' + i + '">Time</label>' + txt('verif.' + i + '.ts', v.ts, {cls:'ts', a:{id:'vts' + i, placeholder:'mm:ss (optional)', inputmode:'numeric', 'data-rr':'1'}}) + '</div></div></div>';
   });
-  if (hasVerifMiss(cur)) h += '<div class="notice warn">A step was missed. In the RCA this defaults to ' + l1Badge('PEOPLE') + ' &gt; Process Adherence &gt; "Failed to complete or request authentication when appropriate".</div>';
+  if (hasVerifMiss(cur)) { const mk = missKey(cur), mp = parseKey(mk); h += '<div class="notice warn">A step was missed. In the RCA this defaults to ' + (mk ? l1Badge(mp.l1) + ' &gt; ' + esc(mp.l2) + ' &gt; "' + esc(mp.l3) + '"' : esc(CTRL)) + '.</div>'; }
   return h + '</div>';
 }
 
@@ -1098,23 +1135,24 @@ function causePicker(slot, side){
   let h = '';
   // suggestions from timeline tags
   const tally = {};
-  cur.events.forEach(e => { if (!e.positive && e.tag && findRow(e.tag) && allowed.includes(parseKey(e.tag).l1)) tally[e.tag] = (tally[e.tag] || 0) + 1; });
+  cur.events.forEach(e => { if (!e.positive && e.tag && findRow(e.tag) && causeFits(parseKey(e.tag), side)) tally[e.tag] = (tally[e.tag] || 0) + 1; });
   const top = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
   if (top.length) h += '<div class="small muted">Suggested from your timeline tags:</div><div class="sugg">' + top.map(([k,n]) => { const p = parseKey(k); return '<button data-act="useTag" data-i="' + slot + '" data-v="' + esc(k) + '">' + (k === keyOf(c) ? '&#10003; ' : 'Use: ') + esc(p.l1 + ' > ' + p.l2 + ' > ' + p.l3) + ' <b>(' + n + ')</b></button>'; }).join('') + '</div>';
+  if (!allowed.length) return '<div class="notice bad">Your framework has no rows marked ' + esc(sideL4(side)) + '. Fix it in Settings &gt; RCA framework.</div>';
   if (allowed.length === 1 && c.l1 !== allowed[0]) { c.l1 = allowed[0]; c.l2 = ''; c.l3 = ''; }
   if (allowed.length > 1) {
-    h += '<h3>' + H_L1 + '</h3><div class="opts">' + allowed.map(l1 => optCard('pickL1', l1, c.l1 === l1, l1, l2List(l1).length + ' categories', (L1_INFO[l1] || {}).tip || 'Primary driver from your framework.', '', l1Cls(l1), slot)).join('') + '</div>';
+    h += '<h3>' + H_L1 + '</h3><div class="opts">' + allowed.map(l1 => optCard('pickL1', l1, c.l1 === l1, l1, sideL2(side, l1).length + ' categories', (L1_INFO[l1] || {}).tip || 'Primary driver from your framework.', '', l1Cls(l1), slot)).join('') + '</div>';
   }
   if (c.l1) {
-    h += '<h3>' + H_L2 + '</h3><div class="opts">' + l2List(c.l1).map(l2 => optCard('pickL2', l2, c.l2 === l2, l2, '', l2Tip(l2), l2Ask(l2) ? '<div class="q">Ask: ' + esc(l2Ask(l2)) + '</div>' : '', l1Cls(c.l1), slot)).join('') + '</div>';
+    h += '<h3>' + H_L2 + '</h3><div class="opts">' + sideL2(side, c.l1).map(l2 => optCard('pickL2', l2, c.l2 === l2, l2, '', l2Tip(l2), l2Ask(l2) ? '<div class="q">Ask: ' + esc(l2Ask(l2)) + '</div>' : '', l1Cls(c.l1), slot)).join('') + '</div>';
   }
   if (c.l1 && c.l2) {
-    h += '<h3>' + H_L3 + '</h3><div class="opts one">' + l3List(c.l1, c.l2).map(row => optCard('pickL3', row.l3, c.l3 === row.l3, row.l3, row.l4, c.l1 + ' > ' + c.l2 + ' (' + row.l4 + '). ' + l2Tip(c.l2), '', '', slot)).join('') + '</div>';
+    h += '<h3>' + H_L3 + '</h3><div class="opts one">' + sideL3(side, c.l1, c.l2).map(row => optCard('pickL3', row.l3, c.l3 === row.l3, row.l3, row.l4, c.l1 + ' > ' + c.l2 + ' (' + row.l4 + '). ' + l2Tip(c.l2), '', '', slot)).join('') + '</div>';
   }
   if (causeDone(c)) {
     h += '<div class="notice ok" style="color:var(--text)">Tracker: ' + l1Badge(c.l1) + ' &gt; <b>' + esc(c.l2) + '</b> &gt; ' + esc(c.l3) + ' ' + l4Badge(l4For(c)) + '</div>';
   }
-  if (c.l1 === 'PEOPLE') {
+  if (side === 'people') {
     h += '<h3>Why did it happen? <span class="muted small">(coaching lens, optional, picks the coaching action)</span></h3><div class="opts">' +
       LENS.map(l => optCard('pickLens', l.k, r[lensKey] === l.k, l.k, l.d, l.tip, '<div class="q">Ask: ' + esc(l.q) + '</div>', '', slot)).join('') + '</div>';
   }
@@ -1144,10 +1182,15 @@ function step4(){
   if (g.state === 'valid') {
     const {p, sec} = sides(cur), miss = hasVerifMiss(cur);
     h += '<div class="card"><h2>Gate 2: Would a fully trained, motivated advocate have avoided this DSAT?</h2>';
-    if (miss) h += '<div class="notice warn">&#9888; A verification step was missed (' + esc(cur.verif.filter(v => v.status === 'missed').map(v => v.name).join(', ')) + '). This defaults to <b>PEOPLE</b> unless you choose PROCESS &gt; Workflow / Content / Support Tools or PRODUCT &gt; Flagstar Outage and write a justification.</div>';
-    h += '<div class="opts">' + G2.map(o => optCard('g2', o.k, r.g2 === o.k, o.t, o.d, o.tip)).join('') + '</div>';
+    if (miss) h += '<div class="notice warn">&#9888; A verification step was missed (' + esc(cur.verif.filter(v => v.status === 'missed').map(v => v.name).join(', ')) + '). This defaults to <b>' + esc(CTRL) + '</b> unless you choose PROCESS &gt; Workflow / Content / Support Tools or PRODUCT &gt; Flagstar Outage and write a justification.</div>';
+    const yesN = sideName('people'), noN = sideName('nc');
+    const g2d = {yes: yesN + ' (' + CTRL + ')', no: noN + ' (' + NCTRL + ')', partly: 'Both (pick Primary + Secondary)'};
+    const g2t = {yes: 'A fully trained, motivated advocate would have avoided this DSAT. Offers the rows your framework marks ' + CTRL + ' (' + yesN + ').',
+                 no: 'Even the best advocate would have got this DSAT. Offers the rows your framework marks ' + NCTRL + ' (' + noN + ').',
+                 partly: G2[2].tip};
+    h += '<div class="opts">' + G2.map(o => optCard('g2', o.k, r.g2 === o.k, o.t, g2d[o.k], g2t[o.k])).join('') + '</div>';
     if (r.g2 === 'partly') h += '<h3>Which is Primary? <span class="muted small">(goes into your tracker)</span></h3><div class="opts">' +
-      [['people','PEOPLE is Primary','Secondary: PROCESS / POLICY / PRODUCT'], ['nc','PROCESS / POLICY / PRODUCT is Primary','Secondary: PEOPLE']].map(([k,t,d]) => optCard('pside', k, r.primarySide === k, t, d, SIDE_TIPS[k])).join('') + '</div>';
+      [['people', yesN + ' is Primary', 'Secondary: ' + noN], ['nc', noN + ' is Primary', 'Secondary: ' + yesN]].map(([k,t,d]) => optCard('pside', k, r.primarySide === k, t, d, k === 'people' ? 'The ' + CTRL + ' cause mattered more. Tracker L4 = ' + CTRL + '.' : 'The ' + NCTRL + ' cause mattered more. Tracker L4 = ' + NCTRL + '.')).join('') + '</div>';
     h += '</div>';
     if (p) {
       h += '<div class="card"><h2>Gate 3: Primary cause</h2><p class="muted small">Pick L1 &gt; L2 &gt; L3 exactly as in the ' + esc(DB.settings.frameworkName) + '. L4 fills itself.</p>' + causePicker('p', p);
@@ -1278,7 +1321,7 @@ const pctOf = (a, b) => b ? Math.round(a / b * 100) + '%' : '0%';
 function repeatAlerts(){
   const since = addDays(today(), -13), map = {};
   DB.scrubs.filter(s => (s.date || '') >= since && (s.date || '') <= today() && s.advocate).forEach(s => {
-    causesOf(s).filter(c => c.l1 === 'PEOPLE').forEach(c => { const k = c.l2 + ' > ' + c.l3; (map[k] = map[k] || new Set()).add(s.advocate); });
+    causesOf(s).filter(c => c.l4 === CTRL).forEach(c => { const k = c.l2 + ' > ' + c.l3; (map[k] = map[k] || new Set()).add(s.advocate); });
   });
   const alerts = [], watch = [];
   Object.entries(map).forEach(([k, set]) => { if (set.size >= 3) alerts.push({k, advs:[...set]}); else if (set.size === 2) watch.push({k, advs:[...set]}); });
@@ -1342,7 +1385,7 @@ function renderDashboard(){
     o.n++;
     const c = ctrlClass(s); if (c === CTRL) o.ctrl++; else if (c === NCTRL) o.nc++;
     if (verifResult(s).code === 'FAIL') o.fail++;
-    causesOf(s).filter(x => x.l1 === 'PEOPLE').forEach(x => o.subs[x.l3] = (o.subs[x.l3] || 0) + 1);
+    causesOf(s).filter(x => x.l4 === CTRL).forEach(x => o.subs[x.l3] = (o.subs[x.l3] || 0) + 1);
     o.open += s.actions.filter(x => x.status !== 'Done').length;
   });
   h += '<div class="card"><h2>Per advocate</h2><div class="tbl-wrap"><table><thead><tr><th>Advocate</th><th>Scrubs</th><th>Controllable</th><th>Non Ctrl</th><th>Verif FAIL</th><th>Repeat PEOPLE L3</th><th>Open actions</th><th></th></tr></thead><tbody>' +
@@ -1519,7 +1562,7 @@ function makeSamples(){
   const a = newScrub();
   Object.assign(a, {sample:true, status:'complete', advocate:'Sample Advocate A', callRef:'SAMPLE-001', date:addDays(t, -2), callLength:'14:20',
     comment:'(FAKE) Customer said the advocate gave the wrong dispute timeline and they had to explain the issue twice.'});
-  a.verif = sampleVerif(['done','done','late']); if (a.verif[2]) a.verif[2].ts = '01:40';
+  a.verif = sampleVerif(['done','late']); if (a.verif[1]) a.verif[1].ts = '01:40';
   a.events = [ev('00:25','Good handling','Warm greeting, friendly tone','',true), ev('02:10','Customer repeated issue','Asked customer to repeat the dispute reason',chipTag('Customer repeated issue')),
     ev('04:45','Wrong info given','Said dispute closes in 2 days (actual: up to 10 business days)',chipTag('Wrong info given')), ev('07:30','Over-promised','Promised a callback "today"',chipTag('Over-promised'))];
   Object.assign(a.rca, {q1:'yes', q2:'yes', q3:'no', g2:'yes', p:parseKey(chipTag('Wrong info given')), pLens:'Knowledge', pExplain:'Did not know the dispute timeline, gave wrong info', pEvidence:[a.events[2].id, a.events[3].id],
@@ -1530,11 +1573,11 @@ function makeSamples(){
     comment:'(FAKE) Customer was put on a long hold, then transferred and had to start over.'});
   b.verif = sampleVerif(['done','missed','done']); if (b.verif[1]) b.verif[1].ts = '00:55';
   const kb = chipTag('KB unclear/missing');
-  b.events = [ev('00:55','KB unclear/missing','Skipped verification step 2: KB flow unclear for this call type',kb), ev('03:30','Long hold no check-back','4 min hold, no check-back',chipTag('Long hold no check-back')),
+  b.events = [ev('00:55','KB unclear/missing','Did not check alerts and restrictions: KB flow unclear for this call type',kb), ev('03:30','Long hold no check-back','4 min hold, no check-back',chipTag('Long hold no check-back')),
     ev('06:40','Wrong info given','Told customer the cards team handles this (it does not)',chipTag('Wrong info given')), ev('08:15','Unneeded transfer','Transferred to cards team',chipTag('Unneeded transfer'))];
   Object.assign(b.rca, {q1:'yes', q2:'yes', q3:'no', g2:'partly', primarySide:'nc', p:parseKey(kb), pExplain:'Topic missing from KB; two conflicting flows', pEvidence:[b.events[0].id],
     s:parseKey(chipTag('Wrong info given')), sLens:'Knowledge', sExplain:'Gave wrong team info, leading to a transfer', sEvidence:[b.events[2].id, b.events[3].id],
-    justification:'KB article for this call type lists two different verification flows; step 2 is missing from one of them.'});
+    justification:'KB article for this call type lists two different flows; the alerts and restrictions check is missing from one of them.'});
 
   const c = newScrub();
   Object.assign(c, {sample:true, status:'complete', advocate:'Sample Advocate C', callRef:'SAMPLE-003', date:addDays(t, -9), callLength:'08:40',
@@ -1564,7 +1607,7 @@ function clearSamples(){
 function setCause(slot, c){
   const r = cur.rca;
   r[slot] = {l1:c.l1 || '', l2:c.l2 || '', l3:c.l3 || ''};
-  if (r[slot].l1 !== 'PEOPLE') r[slot + 'Lens'] = '';
+  if (r[slot].l3 && !isCtrl(r[slot])) r[slot + 'Lens'] = '';
 }
 document.addEventListener('click', e => {
   const tip = e.target.closest('.tip');
@@ -1621,8 +1664,9 @@ document.addEventListener('click', e => {
       if (g.state === 'invalid') r.invalidKey = g.suggest;
       if (g.state === 'valid' && !r.g2 && hasVerifMiss(cur)) {
         r.g2 = 'yes';
-        if (!causeDone(r.p) && findRow(AUTH_KEY)) setCause('p', parseKey(AUTH_KEY));
-        toast('Pre-set to PEOPLE > Process Adherence because a verification step was missed', 4000);
+        const mk = missKey(cur);
+        if (!causeDone(r.p) && mk && causeFits(parseKey(mk), 'people')) { setCause('p', parseKey(mk)); toast('Pre-set to ' + tagShort(mk) + ' because a verification step was missed', 4000); }
+        else toast('Gate 2 pre-set to Yes (' + CTRL + ') because a verification step was missed', 4000);
       }
       touch(); render(); break;
     }
@@ -1632,8 +1676,8 @@ document.addEventListener('click', e => {
       if (v === 'partly' && r.g2 !== 'partly') r.primarySide = prevSide || r.primarySide;
       r.g2 = v;
       const sd = sides(cur);
-      if (!sd.p || !allowedL1(sd.p).includes(r.p.l1)) setCause('p', sd.p === 'people' ? {l1:'PEOPLE'} : {});
-      if (!sd.sec || !allowedL1(sd.sec).includes(r.s.l1)) setCause('s', sd.sec === 'people' ? {l1:'PEOPLE'} : {});
+      if (!sd.p || !causeFits(r.p, sd.p)) setCause('p', {});
+      if (!sd.sec || !causeFits(r.s, sd.sec)) setCause('s', {});
       touch(); render(); break;
     }
     case 'pside': {
@@ -1643,8 +1687,8 @@ document.addEventListener('click', e => {
         r.s = oldP.c; r.sLens = oldP.lens; r.sExplain = oldP.ex; r.sEvidence = oldP.ev;
         r.primarySide = v;
         const sd = sides(cur);
-        if (!allowedL1(sd.p).includes(r.p.l1)) setCause('p', sd.p === 'people' ? {l1:'PEOPLE'} : {});
-        if (!allowedL1(sd.sec).includes(r.s.l1)) setCause('s', sd.sec === 'people' ? {l1:'PEOPLE'} : {});
+        if (!causeFits(r.p, sd.p)) setCause('p', {});
+        if (!causeFits(r.s, sd.sec)) setCause('s', {});
       }
       touch(); render(); break;
     }
@@ -1871,6 +1915,9 @@ loadDB();
   const raw = lsGet(LS_CUR);
   if (raw) { try { const o = JSON.parse(raw); cur = normScrub(o.cur); step = o.step || 1; dirty = !!o.dirty; } catch(e) { cur = null; } }
   if (!cur) cur = newScrub();
+  // unsaved scrub with nothing marked yet: pick up the current verification steps
+  if (!cur.verif.some(v => v.status) && !DB.scrubs.some(x => x.id === cur.id)) cur.verif = DB.settings.verifSteps.map(v => ({name:v.name, critical:!!v.critical, status:'', ts:''}));
+  if (stepsUpdated) setTimeout(() => toast('Verification steps updated: Properly Verified, Checked Alerts and Restrictions', 4000), 300);
   if (!lsSet('dsatScrubBuddy.test', '1')) storageOK = false; else lsDel('dsatScrubBuddy.test');
 })();
 render();
