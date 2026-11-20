@@ -480,7 +480,8 @@ function defaultSettings(){
     verifSteps: [1,2,3,4,5].map(i => ({id: uid(), name: 'Step ' + i, critical: i <= 2})),
     advocates: [],
     framework: defaultFramework(),
-    frameworkName: FW_NAME
+    frameworkName: FW_NAME,
+    mentorName: ''
   };
 }
 function defaultDB(){ return {app:APP, version:2, settings: defaultSettings(), scrubs: []}; }
@@ -498,7 +499,7 @@ function newScrub(){
     advocate:'', callRef:'', date: today(), callLength:'', comment:'',
     verif: DB.settings.verifSteps.map(s => ({name: s.name, critical: !!s.critical, status:'', ts:''})),
     events: [], rca: newRca(), actions: [], actionsKey: '',
-    coaching: {well:'', fix:'', tip:''}
+    coaching: {well:'', fix:'', tip:'', polished:'', polishedAuto:'', tone:'Supportive', format:'Coaching log'}
   };
 }
 function normScrub(s){
@@ -510,7 +511,7 @@ function normScrub(s){
   if (!Array.isArray(r.pEvidence)) r.pEvidence = [];
   if (!Array.isArray(r.sEvidence)) r.sEvidence = [];
   out.rca = r;
-  out.coaching = Object.assign({well:'', fix:'', tip:''}, (s && s.coaching) || {});
+  out.coaching = Object.assign({well:'', fix:'', tip:'', polished:'', polishedAuto:'', tone:'Supportive', format:'Coaching log'}, (s && s.coaching) || {});
   ['verif','events','actions'].forEach(k => { if (!Array.isArray(out[k])) out[k] = []; });
   out.events.forEach(e => { if (!e.id) e.id = uid(); if (e.tag == null) e.tag = ''; });
   out.actions.forEach(a => { if (!a.id) a.id = uid(); if (!a.status) a.status = 'Open'; });
@@ -527,7 +528,8 @@ function normSettings(st){
     verifSteps: Array.isArray(st.verifSteps) && st.verifSteps.length ? st.verifSteps.map(v => ({id: v.id || uid(), name: String(v.name || ''), critical: !!v.critical})) : d.verifSteps,
     advocates: Array.isArray(st.advocates) ? st.advocates.map(String) : [],
     framework: fwk.length ? fwk : d.framework,
-    frameworkName: st.frameworkName || (Array.isArray(st.framework) ? 'Custom framework' : FW_NAME)
+    frameworkName: st.frameworkName || (Array.isArray(st.framework) ? 'Custom framework' : FW_NAME),
+    mentorName: String(st.mentorName || '')
   };
 }
 /* Old "DSAT Scrub Assistant" (v1) data: keep call info, verification, timeline, actions; old RCA kept as a note to re-pick. */
@@ -665,7 +667,7 @@ function piiFields(s){
   f.push(['Survey validation note', r.ncNote], ['Primary explanation', r.pExplain], ['Secondary explanation', r.sExplain], ['Verification justification', r.justification]);
   r.whys.forEach((w,i) => f.push(['Why #' + (i+1), w]));
   s.actions.forEach(a => { f.push(['Action', a.action]); f.push(['Action owner', a.owner]); });
-  f.push(['What went well', s.coaching.well], ['What to fix', s.coaching.fix], ['Tip for next call', s.coaching.tip]);
+  f.push(['What went well', s.coaching.well], ['What to fix', s.coaching.fix], ['Tip for next call', s.coaching.tip], ['Polished coaching note', s.coaching.polished]);
   return f;
 }
 function piiScan(s){
@@ -742,6 +744,173 @@ function coachingText(s){
     'What went well: ' + (c.well || '-') + '\n' +
     'What to fix: ' + (c.fix || '-') + '\n' +
     'Tip for next call: ' + (c.tip || '-');
+}
+
+/* ================= Coaching note polish (runs on this device) ================= */
+const EXPECT = {
+  "Asked irrelevant or insufficient probing questions, resulting in misidentification of the customer's issue":'Ask focused probing questions until you are sure what the customer needs, then confirm it before you act.',
+  "Failed to confirm understanding of the customer's issue":'Repeat the issue back in your own words ("So what I\'m hearing is...") and get a yes before moving on.',
+  "Failed to accurately identify the customer's issue":'Take a moment to pin down the real issue behind the request before choosing a solution.',
+  'Failed to review case history or conversation context':'Check the case history and previous notes at the start of the call, so the customer does not have to repeat themselves.',
+  'Placed unnecessary effort or burden on the customer':'Look for ways to do the work for the customer, so they do not have to repeat information or call back.',
+  'Investigation was incomplete or insufficient':'Review all the information available on the case before giving an answer.',
+  'Investigation delayed resolution unnecessarily':'Keep the investigation focused on what is needed to resolve the issue, and keep the customer updated while you work.',
+  'Failed to gather relevant information before proceeding':'Collect the key details first, then act.',
+  'Misinterpreted available information resulting in incorrect case handling':'Double-check what the case information actually shows before deciding the next step.',
+  'Provided inaccurate information that did not resolve the issue':'Confirm the answer in the KB before sharing it, especially timelines, fees and next steps.',
+  'Provided incomplete information that did not resolve the issue':'Before closing, check that every part of the customer\'s question has a complete answer.',
+  'Provided an overly complex or unnecessary explanation':'Keep explanations short and in plain language: what happened, what we will do, and what happens next.',
+  'Failed to provide sufficient context to support the resolution':'Explain the "why" behind the resolution so the customer understands and trusts it.',
+  'Responses lacked authenticity or ownership':'Take ownership with clear "I will..." statements and follow through on every commitment.',
+  'Case handling was not compliant with privacy or security requirements':'Follow privacy and security requirements at every step of the call, with no exceptions.',
+  'Failed to follow established process requirements':'Follow the documented process step by step, and check the KB whenever you are unsure.',
+  'Case should have been escalated or transferred':'When a request is outside your scope, escalate or transfer it using the correct path.',
+  'Unnecessary escalation':'Check whether you can resolve the issue yourself first, and escalate only when the process requires it.',
+  'Unnecessary transfer to another team':'Before transferring, confirm the receiving team handles this request, or resolve it yourself if you can.',
+  'Incorrect escalation delayed resolution':'Confirm the correct escalation path in the KB before escalating.',
+  'Incorrect case tagging delayed or prevented resolution':'Tag every case accurately so it reaches the right team without delay.',
+  'Failed to complete or request authentication when appropriate':'Complete every required authentication step before discussing or acting on the account.',
+  'Failed to follow call workflow requirements':'Follow the call workflow from opening to closing, including holds and check-backs.',
+  'Failed to follow chat workflow requirements':'Follow the chat workflow requirements on every interaction.',
+  'Missed SLA due to advocate actions':'Plan your follow-ups so every commitment is completed within SLA.',
+  'Failed to set or manage expectations appropriately':'Set clear expectations: what will happen, when, and what the customer needs to do. Only promise what we can deliver.',
+  'Tone was inappropriate for the situation':'Match your tone to the customer\'s situation: calm, warm and steady.',
+  'Lack of empathy':'Acknowledge how the customer feels before moving to the solution ("I understand how frustrating this is...").',
+  'Could have demonstrated greater professionalism':'Keep the call professional throughout: avoid dead air, let the customer finish speaking, and stay focused on their issue.',
+  'Lack of clarity in communication':'Use short, clear sentences and check that the customer understood.',
+  'Information overload':'Share only what the customer needs right now, one step at a time.',
+  'Excessive grammar or spelling errors':'Proofread written responses before sending them.',
+  'Excessive sentence structure issues':'Keep written responses short and well structured.',
+  'Insufficient personalization of responses':'Tailor your response to the customer\'s situation instead of using a generic script.',
+  "Failed to demonstrate understanding of the customer's situation":'Show you understand the customer\'s situation by referring to their specific details.',
+  'Acted in an unprofessional manner':'Keep every interaction respectful and professional, even when the customer is upset.',
+  'Acted on incorrect guidance provided by the Escalation Team':'When Escalation Team guidance does not match the KB, double-check before acting and flag the gap.',
+  'Unfamiliar with the required process or workflow':'Review the process until you can explain it confidently, and use the KB during the call when unsure.'
+};
+const IMPACT = {
+  'Issue Identification':'When the real need is not confirmed early, the customer has to repeat themselves and the call takes longer than it should.',
+  'Investigation Quality':'Without a full review of the case, the customer can get an answer that does not fit their situation.',
+  'Issue Resolution':'An inaccurate or incomplete answer leaves the customer without a real solution and often leads to a repeat call.',
+  'Process Adherence':'Skipping a required step creates risk for the customer and the bank, and can delay the resolution.',
+  'Communication & Professionalism':'How we say things shapes how the customer feels about the whole call, even when the answer is right.',
+  'Capability & Knowledge':'When we are unsure of the process, the customer can feel it, and it can lead to the wrong outcome.'
+};
+const LENS_LINE = {
+  'Knowledge':'This looks like a knowledge gap, so we will refresh the process together.',
+  'Skill':'You know what to do; this is about practicing it live, so we will role-play it together.',
+  'Behavior':'You know the process and can do it. The goal now is to apply it consistently on every call.',
+  'Tool use':'This came down to how the system was used, so we will walk through the screens together.'
+};
+const TONES = {
+  Supportive:{open:'Thanks for reviewing this call with me. The goal here is to help you grow, and a few small changes will make a real difference.', close:'I am confident you will nail this. Let me know if you would like to role-play it before your next shift.', short:'You have got this. Ping me if you want to practice it first.'},
+  Direct:{open:'Here is the feedback from the DSAT review of this call.', close:'Please apply this from your next call onward. We will review progress at our check-in.', short:'Please apply this from your next call.'},
+  Formal:{open:'This note documents the coaching discussion following the DSAT review of the call referenced above.', close:'Please acknowledge receipt of this coaching note and reach out with any questions.', short:'Please acknowledge this note.'}
+};
+const FORMATS = ['Coaching log','Email','Chat message'];
+const sentence = t => { t = String(t || '').replace(/\s+/g, ' ').trim().replace(/\bi\b/g, 'I'); if (!t) return ''; t = t[0].toUpperCase() + t.slice(1); return /[.!?]["')]*$/.test(t) ? t : t + '.'; };
+const lowerFirst = t => { t = String(t || '').trim(); return /^[A-Z]{2}/.test(t) ? t : t.charAt(0).toLowerCase() + t.slice(1); };
+const firstName = n => { n = String(n || '').trim(); if (!n) return 'there'; if (/^Sample Advocate/.test(n)) return n; return n.split(/\s+/)[0]; };
+const niceDate = iso => { if (!iso) return ''; const [y,m,d] = iso.split('-').map(Number); return new Date(y, m-1, d).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); };
+const evLine = e => 'At ' + e.ts + ', ' + (e.chip && e.note ? lowerFirst(e.chip) + ' \u2014 ' + lowerFirst(e.note) : lowerFirst(e.chip || e.note));
+function polishFacts(s){
+  const pc = peopleCause(s); if (!pc) return null;
+  const c = s.coaching, def = coachingDefaults(s);
+  const edited = k => (c[k] || '').trim() && (c[k] || '').trim() !== (def[k] || '').trim();
+  let well = edited('well') ? c.well.split(/[;\n]+/).map(sentence).filter(Boolean)
+    : s.events.filter(e => e.positive).sort((a,b) => tsSec(a.ts) - tsSec(b.ts)).map(e => sentence('Strong moment at ' + e.ts + ' \u2014 ' + lowerFirst(e.note || 'you handled this part of the call well')));
+  const evidence = pc.evidence.map(id => evById(s, id)).filter(Boolean).sort((a,b) => tsSec(a.ts) - tsSec(b.ts)).map(e => sentence(evLine(e)));
+  const since = s.date ? addDays(s.date, -30) : '';
+  const repeats = DB.scrubs.filter(x => x.id !== s.id && x.advocate && x.advocate === s.advocate && (x.date || '') >= since && (x.date || '') <= (s.date || '9999') &&
+    causesOf(x).some(k => k.l1 === 'PEOPLE' && k.l2 === pc.l2)).length;
+  const v = verifResult(s), missed = s.verif.filter(x => x.status === 'missed').map(x => x.name);
+  return {
+    pc, name: firstName(s.advocate), well,
+    happened: edited('fix') ? sentence(c.fix) : (pc.explain ? sentence(pc.explain) : ''),
+    evidence,
+    impact: IMPACT[pc.l2] || '',
+    survey: s.comment ? 'The customer\'s survey comment reflected this: "' + s.comment.replace(/\s+/g, ' ').trim().replace(/[.]$/, '') + '."' : '',
+    expect: EXPECT[pc.l3] || TIPS_L2[pc.l2] || sentence('Next time, avoid this: ' + lowerFirst(pc.l3)),
+    lens: LENS_LINE[pc.lens] || '',
+    repeat: repeats ? 'This is the ' + (repeats === 1 ? 'second' : repeats === 2 ? 'third' : (repeats + 1) + 'th') + ' time ' + pc.l2 + ' has come up in the last 30 days, so let\'s make it a priority.' : '',
+    compliance: (v.code === 'FAIL' || missed.length) ? 'Compliance reminder: ' + missed.join(', ') + ' ' + (missed.length > 1 ? 'were' : 'was') + ' missed. Every required verification step must be completed on every call.' : '',
+    tip: sentence(c.tip || TIPS_LENS[pc.lens] || TIPS_L2[pc.l2] || ''),
+    actions: s.actions.filter(a => a.status !== 'Done').map(a => sentence((a.action || 'Follow-up') + ' (owner: ' + (a.owner || 'Mentor') + (a.due ? ', by ' + niceDate(a.due) : '') + ')')),
+    checkin: s.actions.filter(a => a.status !== 'Done' && a.due).map(a => a.due).sort()[0] || '',
+    mentor: (DB.settings.mentorName || '').trim()
+  };
+}
+function polishNote(s, tone, format){
+  const f = polishFacts(s); if (!f) return '';
+  const T = TONES[tone] || TONES.Supportive, pc = f.pc;
+  const greet = tone === 'Formal' ? (s.advocate || 'Advocate') + ',' : 'Hi ' + f.name + ',';
+  const wellList = f.well.length ? f.well : ['[Add one specific strength you heard on this call. Tip: tag a "Good handling" moment in Step 3.]'];
+  const improve = [f.happened ? 'What I noticed: ' + lowerFirst(f.happened) : ''].concat(f.evidence, [f.impact + (f.survey ? ' ' + f.survey : '')]).filter(Boolean);
+  const nextSteps = f.actions.concat(f.checkin ? ['Check-in: ' + niceDate(f.checkin) + '.'] : []);
+  const sign = tone === 'Formal' ? (f.mentor || 'Mentor') + '\nMentor / SME' : f.mentor ? '- ' + f.mentor : '- Your mentor';
+  if (format === 'Chat message') {
+    return [
+      'Hi ' + f.name + '! Quick feedback on call ' + (s.callRef || '') + (s.date ? ' from ' + niceDate(s.date) : '') + '.',
+      f.well[0] ? 'Went well: ' + lowerFirst(f.well[0]) : '',
+      'To improve: ' + (f.evidence[0] ? lowerFirst(f.evidence[0]) + ' Next time: ' + lowerFirst(f.expect) : f.expect),
+      'Tip: ' + f.tip,
+      f.actions[0] ? 'Next: ' + f.actions[0] : '',
+      f.compliance,
+      T.short
+    ].filter(Boolean).join('\n');
+  }
+  if (format === 'Email') {
+    return [
+      'Subject: Coaching follow-up - Call ' + (s.callRef || '') + (s.date ? ' (' + niceDate(s.date) + ')' : ''),
+      '', greet, '', T.open, '',
+      'What went well: ' + wellList.join(' '), '',
+      'What to improve (' + pc.l2 + '): ' + [f.happened, f.impact, f.survey].filter(Boolean).join(' '),
+      f.evidence.length ? '\nKey moments:\n' + f.evidence.map(x => '- ' + x).join('\n') : '',
+      '\nGoing forward: ' + f.expect + (f.lens ? ' ' + f.lens : ''),
+      f.repeat ? '\n' + f.repeat : '', f.compliance ? '\n' + f.compliance : '',
+      '', 'Tip for your next call: ' + f.tip,
+      nextSteps.length ? '\nNext steps: ' + nextSteps.join(' ') : '',
+      '', T.close, '', tone === 'Formal' ? 'Regards,\n' + sign : 'Best,\n' + sign.replace(/^- /, '')
+    ].filter(x => x !== '' || true).join('\n').replace(/\n{3,}/g, '\n\n');
+  }
+  const bullets = a => a.map(x => '- ' + x).join('\n');
+  return [
+    'COACHING NOTE',
+    'Advocate: ' + (s.advocate || '-') + ' | Call: ' + (s.callRef || '-') + ' | Date: ' + (niceDate(s.date) || '-') + (f.mentor ? ' | Mentor: ' + f.mentor : ''),
+    'Focus: ' + pc.l2 + ' - ' + pc.l3 + (pc.lens ? ' (' + pc.lens + ')' : ''),
+    '', greet, '', T.open, '',
+    'WHAT WENT WELL', bullets(wellList), '',
+    'WHAT TO IMPROVE', bullets(improve), '',
+    'WHAT GOOD LOOKS LIKE', bullets([f.expect].concat(f.lens ? [f.lens] : [], f.repeat ? [f.repeat] : [], f.compliance ? [f.compliance] : [])), '',
+    'TIP FOR YOUR NEXT CALL', bullets([f.tip]),
+    nextSteps.length ? '\nNEXT STEPS\n' + bullets(nextSteps) : '',
+    '', T.close, '', sign
+  ].join('\n').replace(/\n{3,}/g, '\n\n');
+}
+function aiPrompt(s, tone, format){
+  const f = polishFacts(s); if (!f) return '';
+  const pc = f.pc;
+  return [
+    'You are a coaching specialist for a US banking customer-service team. Rewrite the coaching note below so it sounds professional, warm, specific and personal, not like a template.',
+    'Rules:',
+    '- Keep every fact. Do not invent strengths, events, numbers or outcomes.',
+    '- Do not add any customer details (no names, account or card numbers).',
+    '- Tone: ' + tone + '. Format: ' + format + '. Address the advocate as "' + f.name + '".',
+    '- Keep these parts: What went well, What to improve, What good looks like, Tip for next call, Next steps.',
+    '- Use plain English. Keep it under ' + (format === 'Chat message' ? '90' : '250') + ' words.',
+    '',
+    'Facts:',
+    '- Root cause (FS DSAT RCA Matrix): ' + pc.l1 + ' > ' + pc.l2 + ' > ' + pc.l3 + ' (' + pc.l4 + ')' + (pc.lens ? '; coaching lens: ' + pc.lens : ''),
+    f.happened ? '- Mentor explanation: ' + f.happened : '',
+    f.evidence.length ? '- Call moments: ' + f.evidence.join(' ') : '',
+    f.well.length ? '- Strengths heard: ' + f.well.join(' ') : '- Strengths heard: none recorded (leave a placeholder for the mentor).',
+    f.survey ? '- ' + f.survey : '',
+    f.repeat ? '- History: ' + f.repeat : '',
+    f.compliance ? '- ' + f.compliance : '',
+    f.actions.length ? '- Agreed actions: ' + f.actions.join(' ') : '',
+    '',
+    'Draft to improve:',
+    polishNote(s, tone, format)
+  ].filter(x => x !== '' || true).join('\n').replace(/\n{3,}/g, '\n\n');
 }
 
 /* ================= Export columns (tracker-first) ================= */
@@ -1020,10 +1189,24 @@ function step5(){
   return h + '<button class="btn" data-act="addAction">+ Add action</button></div>';
 }
 
+function polishPanel(){
+  const c = cur.coaching;
+  let h = '<h3 style="margin-top:18px">&#10024; Polish the note</h3><p class="muted small">Turns your drafts, RCA, timeline moments, action plan and the advocate\'s recent history into a professional, personalized note. Runs on this device; nothing is sent anywhere.</p>';
+  h += '<div class="row" style="margin-bottom:8px"><b class="small" style="min-width:60px">Tone</b><div class="seg">' + Object.keys(TONES).map(t => '<button class="' + (c.tone === t ? 'sel' : '') + '" data-act="coachTone" data-v="' + t + '" aria-pressed="' + (c.tone === t) + '">' + t + '</button>').join('') + '</div></div>';
+  h += '<div class="row" style="margin-bottom:10px"><b class="small" style="min-width:60px">Format</b><div class="seg">' + FORMATS.map(t => '<button class="' + (c.format === t ? 'sel' : '') + '" data-act="coachFmt" data-v="' + t + '" aria-pressed="' + (c.format === t) + '">' + t + '</button>').join('') + '</div></div>';
+  h += '<div class="row"><button class="btn primary" data-act="polish">&#10024; ' + (c.polished ? 'Polish again' : 'Polish note') + '</button>' +
+    '<button class="btn" data-act="copyPrompt">Copy prompt for AI tool</button>' + tipBtn('Copies a ready-made prompt with this note and its facts (no customer data). Paste it into your company-approved AI tool, then paste the AI\'s answer into the Polished note box below.', 'AI prompt') + '</div>';
+  if (c.polished || c.polishedAuto) {
+    if (c.polished && c.polishedAuto && c.polished !== c.polishedAuto) h += '<p class="small muted" style="margin-top:8px">Edited by you. "Polish again" will replace your edits.</p>';
+    h += '<label class="f" for="c_pol">Polished note <span class="hint">(edit freely, or paste your AI tool\'s version here)</span></label>' + area('coaching.polished', c.polished, {a:{id:'c_pol', style:'min-height:340px'}}) +
+      '<div class="row" style="margin-top:8px"><button class="btn primary" data-act="copyPolished">Copy polished note</button><button class="btn sm danger" data-act="clearPolished">Discard polished note</button></div>';
+  }
+  return h;
+}
 function step6(){
   if (!step4Errors(cur).length) ensureActions(cur);
   const pc = peopleCause(cur);
-  if (pc && !cur.coaching.well && !cur.coaching.fix && !cur.coaching.tip) cur.coaching = coachingDefaults(cur);
+  if (pc && !cur.coaching.well && !cur.coaching.fix && !cur.coaching.tip) Object.assign(cur.coaching, coachingDefaults(cur));
   const errs = step1Errors(cur).concat(step4Errors(cur));
   let h = '';
   if (errs.length) h += '<div class="notice ' + (ui.showErr ? 'bad' : 'warn') + '"><b>Not finished yet:</b><ul>' + errs.map(e => '<li>' + esc(e) + '</li>').join('') + '</ul></div>';
@@ -1040,7 +1223,7 @@ function step6(){
       '<p class="muted small">Focus: ' + esc(pc.l2 + ' - ' + pc.l3) + (pc.lens ? ' [' + esc(pc.lens) + ']' : '') + '</p>' +
       '<label class="f" for="c_well">What went well</label>' + area('coaching.well', cur.coaching.well, {a:{id:'c_well', placeholder:'Tip: add "Good handling" events in Step 3 to fill this in.'}}) +
       '<label class="f" for="c_fix">What to fix</label>' + area('coaching.fix', cur.coaching.fix, {a:{id:'c_fix'}}) +
-      '<label class="f" for="c_tip">Tip for next call</label>' + area('coaching.tip', cur.coaching.tip, {a:{id:'c_tip'}}) + '</div>';
+      '<label class="f" for="c_tip">Tip for next call</label>' + area('coaching.tip', cur.coaching.tip, {a:{id:'c_tip'}}) + polishPanel() + '</div>';
   }
   return h;
 }
@@ -1188,6 +1371,7 @@ function renderSettings(){
       '<button class="btn sm" data-act="sMove" data-v="verifSteps" data-i="' + i + '" aria-label="Move up"' + (i === 0 ? ' disabled' : '') + '>&uarr;</button>' +
       '<button class="btn sm danger" data-act="sDel" data-v="verifSteps" data-i="' + i + '">Remove</button></div>').join('') +
     '<button class="btn" data-act="sAdd" data-v="verifSteps">+ Add step</button></div>';
+  h += '<div class="card"><h2>Your details</h2><label class="f" for="mentorName">Your name <span class="hint">(sign-off on polished coaching notes, optional)</span></label>' + sInput('mentorName', st.mentorName || '', 'Your name').replace('<input', '<input id="mentorName"') + '</div>';
   h += '<div class="card"><h2>Advocates</h2><p class="muted small">Names shown in the Step 1 dropdown. Removing a name does not change saved scrubs.</p>' +
     st.advocates.map((v,i) => '<div class="srow">' + sInput('advocates.' + i, v, 'Advocate ' + (i+1)) + '<button class="btn sm danger" data-act="sDel" data-v="advocates" data-i="' + i + '">Remove</button></div>').join('') +
     '<button class="btn" data-act="sAdd" data-v="advocates">+ Add advocate</button></div>';
@@ -1360,7 +1544,7 @@ function makeSamples(){
   c.events = [ev('01:15','Good handling','Explained overdraft policy clearly and showed empathy','',true), ev('05:20','','Customer says overdraft rules are unfair',od)];
   Object.assign(c.rca, {q1:'yes', q2:'yes', q3:'yes', g2:'no', p:parseKey(od), pExplain:'Overdraft handled correctly per policy', pEvidence:[c.events[1].id]});
 
-  [a, b, c].forEach(s => { s.actions = suggestActions(s); s.actionsKey = actionsKey(s); if (peopleCause(s)) s.coaching = coachingDefaults(s); });
+  [a, b, c].forEach(s => { s.actions = suggestActions(s); s.actionsKey = actionsKey(s); if (peopleCause(s)) Object.assign(s.coaching, coachingDefaults(s)); });
   return [a, b, c];
 }
 function loadSamples(){
@@ -1485,11 +1669,30 @@ document.addEventListener('click', e => {
     case 'delAction': cur.actions = cur.actions.filter(a => a.id !== id); touch(); render(); break;
     case 'actStatus': cur.actions[+i].status = v; cur.actions[+i].edited = true; touch(); render(); break;
     case 'copySummary': copyText(summaryText(cur), 'Summary copied'); break;
-    case 'copyCoach': copyText(coachingText(cur), 'Coaching note copied'); break;
+    case 'copyCoach': copyText(cur.coaching.polished || coachingText(cur), 'Coaching note copied'); break;
     case 'copyTracker': copyText(trackerValues(cur).map(x => tsvCell(x[1])).join('\t'), 'L1-L4 copied'); break;
     case 'copyOne': { const tv = trackerValues(cur)[+i]; copyText(tv[1], tv[0] + ' copied'); break; }
     case 'copyRow': copyText(logRow(cur).map(tsvCell).join('\t'), 'Full row copied'); break;
-    case 'regenCoach': cur.coaching = coachingDefaults(cur); touch(); render(); break;
+    case 'regenCoach': Object.assign(cur.coaching, coachingDefaults(cur)); touch(); render(); break;
+    case 'coachTone': case 'coachFmt': {
+      const c = cur.coaching, auto = c.polished && c.polished === c.polishedAuto;
+      c[act === 'coachTone' ? 'tone' : 'format'] = v;
+      if (auto) { c.polished = c.polishedAuto = polishNote(cur, c.tone, c.format); }
+      touch(); render(); break;
+    }
+    case 'polish': {
+      const c = cur.coaching;
+      if (c.polished && c.polished !== c.polishedAuto && !confirm('Replace your edited polished note?')) return;
+      c.polished = c.polishedAuto = polishNote(cur, c.tone, c.format);
+      touch(); render(); const t = $('#c_pol'); if (t) t.scrollIntoView({block:'center'}); toast('Polished. Review and edit before sharing.'); break;
+    }
+    case 'copyPrompt': {
+      const bad = piiScan(cur);
+      if (bad.length) { toast('Remove 6+ digit numbers first: ' + bad.join(', '), 4000); return; }
+      copyText(aiPrompt(cur, cur.coaching.tone, cur.coaching.format), 'AI prompt copied. Use only your company-approved AI tool.'); break;
+    }
+    case 'copyPolished': copyText(cur.coaching.polished, 'Polished note copied'); break;
+    case 'clearPolished': if (!confirm('Discard the polished note?')) return; cur.coaching.polished = cur.coaching.polishedAuto = ''; touch(); render(); break;
     case 'editScrub': {
       if (dirty && cur && !confirm('Discard unsaved changes to the current scrub?')) return;
       const s = DB.scrubs.find(x => x.id === id); if (!s) return;
@@ -1602,6 +1805,7 @@ document.addEventListener('input', e => {
     if (markPII(el)) return; // not persisted
     const parts = el.dataset.sbind.split('.');
     if (parts[0] === 'verifSteps') DB.settings.verifSteps[+parts[1]].name = el.value;
+    else if (parts[0] === 'mentorName') DB.settings.mentorName = el.value;
     else DB.settings[parts[0]][+parts[1]] = el.value;
     saveDB(); return;
   }
