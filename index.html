@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{document.documentElement.setAttribute('data-theme',localStorage.getItem('dsatScrubBuddy.theme')||'light')}catch(e){document.documentElement.setAttribute('data-theme','light')}</script>
 <title>DSAT Scrub Buddy</title>
 <style>
 :root{
@@ -17,8 +18,9 @@
   --shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
   --radius:12px;
 }
+/* Theme: light by default; header switch cycles Light / Dark / Auto (follows the device). Dark values are declared twice: OS-dark when Auto, and forced Dark. */
 @media (prefers-color-scheme: dark){
-  :root{
+  :root[data-theme="auto"]{
     color-scheme: dark;
     --bg:#121316; --card:#1c1e22; --text:#eeeef0; --muted:#a6abb5; --line:#33363d; --soft:#262930;
     --primary:#5b8def; --primary-ink:#0d1220; --primary-soft:#1f2b44;
@@ -29,6 +31,16 @@
     --shadow:none;
   }
 }
+:root[data-theme="dark"]{
+    color-scheme: dark;
+    --bg:#121316; --card:#1c1e22; --text:#eeeef0; --muted:#a6abb5; --line:#33363d; --soft:#262930;
+    --primary:#5b8def; --primary-ink:#0d1220; --primary-soft:#1f2b44;
+    --ok:#5fd18c; --ok-bg:#16301f; --warn:#f2b84b; --warn-bg:#33270f; --bad:#ff8a80; --bad-bg:#3a1b19;
+    --c-people:#3987e5; --c-process:#d95926; --c-policy:#9085e9; --c-product:#0ca30c; --c-survey:#8f8e88;
+    --t-people:#1d3550; --t-process:#4a2f17; --t-policy:#332b52; --t-product:#1e3a1c; --t-survey:#3a3b3e; --t-ink:#eeeef0;
+    --c-ctrl:#3987e5; --c-nc:#8794a6; --c-undecided:#4a4d55;
+    --shadow:none;
+  }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-text-size-adjust:100%}
@@ -43,6 +55,7 @@ header.top .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding
 .brand{font-weight:800;font-size:1.1rem;margin-right:auto;white-space:nowrap}
 .brand small{display:block;font-weight:400;color:var(--muted);font-size:.75rem}
 nav.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.themebtn{min-height:40px;padding:0 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft);color:var(--text);font:inherit;font-size:.88rem;font-weight:600;cursor:pointer;white-space:nowrap}
 nav.tabs button{min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--text);font:inherit;font-weight:600;cursor:pointer}
 nav.tabs button[aria-current="page"]{background:var(--primary);border-color:var(--primary);color:var(--primary-ink)}
 @media (max-width:560px){
@@ -105,7 +118,7 @@ input:focus,select:focus,textarea:focus,button:focus-visible,[role=button]:focus
 .steps button b{display:block;font-size:1rem}
 .steps button.done{color:var(--text);border-color:var(--primary)}
 .steps button[aria-current="step"]{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
-@media (max-width:560px){.steps button span{display:none}}
+@media (max-width:560px){.steps button > span{display:none}}
 
 /* option cards */
 .opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin:8px 0}
@@ -220,6 +233,29 @@ th{color:var(--muted);font-weight:600;white-space:nowrap}
 @media (max-width:760px){.fwrow{grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:10px;padding:8px}.fwrow .l3{grid-column:1 / -1}}
 
 #toast{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;z-index:200;display:none;max-width:90vw;text-align:center}
+#toast .undo{margin-left:12px;min-height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--bg);background:transparent;color:var(--bg);font:inherit;font-weight:800;cursor:pointer}
+.cardhead{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.cardhead h2{flex:1 1 220px}
+.reset{min-height:34px;padding:0 10px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--muted);font:inherit;font-size:.85rem;font-weight:600;cursor:pointer}
+.reset:hover{color:var(--bad);border-color:var(--bad)}
+.gstrip{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.gstrip a{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-size:.85rem;font-weight:600;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gstrip a.done{border-color:var(--ok);background:var(--ok-bg)}
+.gstrip a.todo{border-style:dashed;color:var(--muted)}
+.steps button .ok{color:var(--ok);font-weight:800}
+.steps button[aria-current="step"] .ok{color:var(--primary-ink)}
+.savestate{font-size:.8rem;font-weight:700;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.savestate.dirty{background:var(--warn-bg);color:var(--warn)}
+.savestate.saved{background:var(--ok-bg);color:var(--ok)}
+.timer{display:flex;gap:6px;align-items:center;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin:10px 0;background:var(--soft)}
+.timer .clock{font:800 1.4rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;min-width:74px}
+.timer.run .clock{color:var(--ok)}
+.rcasearch{margin:6px 0 4px}
+.rcares button{display:block;width:100%;text-align:left;min-height:44px;margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--text);font:inherit;font-size:.9rem;cursor:pointer}
+.rcares button:hover{border-color:var(--primary)}
+.rcares .path{display:block;font-size:.78rem;color:var(--muted)}
+.vts-row{display:flex;gap:6px;align-items:center}
+.kbd{font:600 .78rem ui-monospace,Menlo,Consolas,monospace;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--card)}
 details summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;align-items:center}
 .whys input{margin-bottom:6px}
 .sr{position:absolute;left:-9999px}
@@ -230,6 +266,7 @@ details summary{cursor:pointer;font-weight:700;min-height:44px;display:flex;alig
 <header class="top">
   <div class="wrap">
     <div class="brand">DSAT Scrub Buddy<small>Offline. No audio. Nothing leaves this device.</small></div>
+    <button class="themebtn" id="themeBtn" data-act="theme" title="Switch theme: Light, Dark or Auto (follows your device)"></button>
     <nav class="tabs" aria-label="Main">
       <button data-act="view" data-v="scrub">Scrub</button>
       <button data-act="view" data-v="history">History</button>
@@ -416,10 +453,15 @@ function normTs(v){
   return null;
 }
 const tsSec = v => { const n = normTs(v); if (!n) return 99999; const [a,b] = n.split(':').map(Number); return a*60+b; };
-function toast(msg, ms){
-  const t = $('#toast'); t.textContent = msg; t.style.display = 'block';
-  clearTimeout(toast._t); toast._t = setTimeout(() => t.style.display = 'none', ms || 2600);
+function toast(msg, ms, withUndo){
+  const t = $('#toast');
+  t.innerHTML = esc(msg) + (withUndo ? '<button class="undo" data-act="undo">Undo</button>' : '');
+  t.style.display = 'block';
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.style.display = 'none', ms || (withUndo ? 7000 : 2600));
 }
+/* one-level undo for resets and deletes */
+let undoSnap = null;
+function snapshot(){ undoSnap = {cur: clone(cur), scrubs: clone(DB.scrubs), step, view}; }
 function download(name, text, type){
   const blob = new Blob([text], {type: type || 'text/plain'});
   const a = document.createElement('a');
@@ -601,9 +643,16 @@ function saveDB(){ lsSet(LS_DB, JSON.stringify(DB)); }
 
 /* ================= App state ================= */
 let cur = null, step = 1, view = 'scrub', dirty = false;
-const ui = {addingAdv:false, newAdv:'', ev:{ts:'', chip:'', note:'', tag:''}, evErr:'', histQ:'', filt:{from:'', to:'', adv:''}, showErr:false, fwFilter:'', fwQ:'', fwPaste:'', fwMsg:''};
+const ui = {rcaQ:{p:'', s:''}, histF:'all', histSort:'new', addingAdv:false, newAdv:'', ev:{ts:'', chip:'', note:'', tag:''}, evErr:'', histQ:'', filt:{from:'', to:'', adv:''}, showErr:false, fwFilter:'', fwQ:'', fwPaste:'', fwMsg:''};
 let curTimer = null;
-function touch(){ dirty = true; clearTimeout(curTimer); curTimer = setTimeout(saveCur, 350); }
+function touch(){ dirty = true; clearTimeout(curTimer); curTimer = setTimeout(saveCur, 350); updateSaveState(); }
+function saveStateHTML(){
+  const saved = DB.scrubs.find(x => x.id === cur.id);
+  if (dirty) return '<span class="savestate dirty" title="Your work is kept on this device, but not yet saved to History">&#9679; Unsaved changes</span>';
+  if (saved) return '<span class="savestate saved">&#10003; Saved' + (saved.status === 'complete' ? '' : ' as draft') + '</span>';
+  return '';
+}
+function updateSaveState(){ const el = $('#saveState'); if (el) el.innerHTML = saveStateHTML(); }
 function saveCur(){
   if (!cur) return;
   if (piiScan(cur).length) return; // never persist suspected account numbers
@@ -1001,6 +1050,9 @@ function tagOptions(sel){
 }
 
 /* ================= Render ================= */
+const THEMES = {light:'&#9728; Light', dark:'&#9790; Dark', auto:'&#9680; Auto'};
+function currentTheme(){ return document.documentElement.getAttribute('data-theme') || 'light'; }
+function setTheme(t){ document.documentElement.setAttribute('data-theme', t); try { localStorage.setItem('dsatScrubBuddy.theme', t); } catch(e) {} const b = $('#themeBtn'); if (b) b.innerHTML = THEMES[t]; }
 function render(){
   const fk = focusKey();
   document.querySelectorAll('nav.tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.v === view ? 'page' : 'false'));
@@ -1025,16 +1077,29 @@ function focusKey(){
 }
 function restoreFocus(sel){ if (!sel) return; try { const el = document.querySelector(sel); if (el) el.focus({preventScroll:true}); } catch(e){} }
 
+function stepDone(n){
+  const g = gate1(cur);
+  switch (n) {
+    case 1: return !step1Errors(cur).length;
+    case 2: return ['PASS','PARTIAL','FAIL'].includes(verifResult(cur).code);
+    case 3: return cur.events.length > 0;
+    case 4: return g.state !== 'incomplete' && !step4Errors(cur).length;
+    case 5: return cur.actions.length > 0;
+    case 6: return cur.status === 'complete' && !dirty;
+  }
+  return false;
+}
+const SHORTCUTS = 'Keyboard shortcuts: Alt+Right = Next, Alt+Left = Back, Alt+1 to Alt+6 = go to step, Ctrl+S = Save draft, Alt+T = put the timer time into the time box (Step 3), Alt+P = start/pause the timer, Enter in the note box = Add event.';
 function renderWizard(){
   const pct = Math.round(step / 6 * 100);
   let h = '';
   if (migratedMsg) h += '<div class="notice info">' + esc(migratedMsg) + ' <button class="btn sm" data-act="dismissMig">OK</button></div>';
   h += '<div class="row" style="margin-bottom:10px"><h1 class="grow" style="font-size:1.3rem;margin:0">' +
     (DB.scrubs.some(x => x.id === cur.id) ? 'Editing scrub' : 'New scrub') +
-    (cur.callRef ? ' <span class="muted small">' + esc(cur.callRef) + '</span>' : '') + '</h1>' +
-    '<button class="btn sm" data-act="newScrub">+ Start new scrub</button></div>';
+    (cur.callRef ? ' <span class="muted small">' + esc(cur.callRef) + '</span>' : '') + ' <span id="saveState">' + saveStateHTML() + '</span></h1>' +
+    tipBtn(SHORTCUTS, 'Keyboard shortcuts') + '<button class="btn sm" data-act="newScrub">+ Start new scrub</button></div>';
   h += '<div class="progress" aria-label="Progress"><div class="pbar"><span style="width:' + pct + '%"></span></div><ol class="steps">' +
-    STEP_NAMES.map((n,i) => '<li><button data-act="goto" data-v="' + (i+1) + '"' + (step === i+1 ? ' aria-current="step"' : '') + ' class="' + (i+1 < step ? 'done' : '') + '"><b>' + (i+1) + '</b><span>' + n + '</span></button></li>').join('') +
+    STEP_NAMES.map((n,i) => '<li><button data-act="goto" data-v="' + (i+1) + '"' + (step === i+1 ? ' aria-current="step"' : '') + ' class="' + (i+1 < step || stepDone(i+1) ? 'done' : '') + '"><b>' + (i+1) + (stepDone(i+1) ? ' <span class="ok" aria-label="done">&#10003;</span>' : '') + '</b><span>' + n + '</span></button></li>').join('') +
     '</ol></div>';
   h += [null, step1, step2, step3, step4, step5, step6][step]();
   return h;
@@ -1079,22 +1144,43 @@ function step2(){
   let h = '<div class="card"><h2>Step 2: Verification check</h2>';
   h += '<div class="result-big ' + r.cls + '" id="vResult">' + (r.code === 'FAIL' ? 'FAIL - Compliance fail' : esc(r.code)) + '<div class="small" style="font-weight:600">' + esc(r.code === 'FAIL' ? 'A critical step was missed. ' + verifDetail(cur) : r.label) + '</div></div>';
   h += '<p class="muted small">Tap a result for each step. Tap again to clear. <b>Critical</b> step Missed = FAIL. Any step late, out of order, or a non-critical miss = PARTIAL.</p>';
+  h += timerHTML();
   h += '<div class="row" style="margin-bottom:10px"><button class="btn sm" data-act="allDone">Mark all Done</button><button class="btn sm" data-act="reloadSteps">Reload steps from Settings</button><button class="btn sm" data-act="view" data-v="settings">Edit steps in Settings</button></div>';
   if (!cur.verif.length) h += '<div class="notice warn">No verification steps. Add your site\'s steps in Settings.</div>';
   cur.verif.forEach((v,i) => {
     h += '<div class="vstep"><div class="vname">' + esc(v.name || ('Step ' + (i+1))) + (v.critical ? ' <span class="badge bad">Critical</span>' : '') + '</div>' +
       '<div class="row"><div class="seg" role="group" aria-label="Result for ' + esc(v.name) + '">' +
       VSTATUS.map(s => '<button class="' + s.cls + (v.status === s.k ? ' sel' : '') + '" data-act="vstat" data-i="' + i + '" data-v="' + s.k + '" aria-pressed="' + (v.status === s.k) + '">' + s.label + '</button>').join('') +
-      '</div><div><label class="sr" for="vts' + i + '">Time</label>' + txt('verif.' + i + '.ts', v.ts, {cls:'ts', a:{id:'vts' + i, placeholder:'mm:ss (optional)', inputmode:'numeric', 'data-rr':'1'}}) + '</div></div></div>';
+      '</div><div class="vts-row"><label class="sr" for="vts' + i + '">Time</label>' + txt('verif.' + i + '.ts', v.ts, {cls:'ts', a:{id:'vts' + i, placeholder:'mm:ss (optional)', inputmode:'numeric', 'data-rr':'1'}}) +
+      (timerMs() ? '<button class="btn sm" data-act="stampVerif" data-i="' + i + '" aria-label="Use timer time">&#9201;</button>' : '') + '</div></div></div>';
   });
   if (hasVerifMiss(cur)) { const mk = missKey(cur), mp = parseKey(mk); h += '<div class="notice warn">A step was missed. In the RCA this defaults to ' + (mk ? l1Badge(mp.l1) + ' &gt; ' + esc(mp.l2) + ' &gt; "' + esc(mp.l3) + '"' : esc(CTRL)) + '.</div>'; }
   return h + '</div>';
 }
 
+/* Call timer: start it when you press play on the recording, then stamp times with one tap. */
+const timer = {start:0, base:0, running:false, iv:null};
+const timerMs = () => timer.base + (timer.running ? Date.now() - timer.start : 0);
+const fmtMs = ms => { const t = Math.max(0, Math.floor(ms / 1000)); return pad(Math.floor(t / 60)) + ':' + pad(t % 60); };
+function timerTick(){ document.querySelectorAll('.timer .clock').forEach(el => el.textContent = fmtMs(timerMs())); }
+function timerToggle(){
+  if (timer.running) { timer.base = timerMs(); timer.running = false; clearInterval(timer.iv); }
+  else { timer.start = Date.now(); timer.running = true; clearInterval(timer.iv); timer.iv = setInterval(timerTick, 250); }
+}
+function timerHTML(){
+  return '<div class="timer' + (timer.running ? ' run' : '') + '"><span aria-hidden="true">&#9201;</span><span class="clock" aria-live="off">' + fmtMs(timerMs()) + '</span>' +
+    '<button class="btn sm" data-act="timer" data-v="toggle">' + (timer.running ? 'Pause' : (timerMs() ? 'Resume' : 'Start')) + '</button>' +
+    '<button class="btn sm" data-act="timer" data-v="-5" aria-label="Back 5 seconds">-5s</button><button class="btn sm" data-act="timer" data-v="5" aria-label="Forward 5 seconds">+5s</button>' +
+    '<button class="btn sm" data-act="timer" data-v="sync">Set to time box</button><button class="btn sm" data-act="timer" data-v="reset">Reset</button>' +
+    tipBtn('Start the timer when you press play on the recording, and pause it when you pause the recording. "Use timer" and Alt+T put the timer time into the time box. If the timer drifts, type the player time in the time box and tap "Set to time box". Only a clock: nothing is recorded.', 'Call timer') + '</div>';
+}
 function step3(){
   const e = ui.ev;
   let h = '<div class="card"><h2>Step 3: Timeline of what went wrong</h2><p class="muted small">Pause the recording, type the time you see in the player, tap a chip and/or write a note. Chips pre-fill the matching RCA Matrix tag (L1 &gt; L2 &gt; L3), which you can change.</p>';
-  h += '<div class="row"><div style="flex:0 0 120px"><label class="f" for="evTs">Time (mm:ss)</label><input type="text" id="evTs" data-ui="ts" value="' + esc(e.ts) + '" placeholder="03:15" inputmode="numeric" autocomplete="off"></div></div>';
+  h += timerHTML();
+  h += '<div class="row" style="align-items:flex-end"><div style="flex:0 0 120px"><label class="f" for="evTs">Time (mm:ss)</label><input type="text" id="evTs" data-ui="ts" value="' + esc(e.ts) + '" placeholder="' + (timerMs() ? 'timer' : '03:15') + '" inputmode="numeric" autocomplete="off"></div>' +
+    '<button class="btn" data-act="useTimer">&#9201; Use timer</button></div>' +
+    (timerMs() ? '<p class="small muted" style="margin:6px 0 0">Leave the time box empty to use the timer time when you add the event.</p>' : '');
   h += '<label class="f">Quick chips</label><div class="chips">' + CHIPS.map(c => '<button class="chip' + (c.positive ? ' pos' : '') + (e.chip === c.label ? ' sel' : '') + '" data-act="chip" data-v="' + esc(c.label) + '" aria-pressed="' + (e.chip === c.label) + '">' + esc(c.label + (c.positive ? ' (positive)' : '')) + '</button>').join('') + '</div>';
   const bad = hasPII(e.note);
   h += '<label class="f" for="evNote">Note <span class="hint">(optional if a chip is picked)</span></label><input type="text" id="evNote" data-ui="note" class="' + (bad ? 'pii-bad' : '') + '" value="' + esc(e.note) + '" placeholder="What happened? (no customer details)" autocomplete="off">' + (bad ? piiMsgHTML : '');
@@ -1130,6 +1216,19 @@ function evidenceList(slot, list, cause){
       (e.positive ? ' <span class="muted small">[positive]</span>' : '') + (match ? ' <span class="match">&#9679; ' + match + '</span>' : '') + (e.tag ? '<br><span class="muted small">' + esc(tagShort(e.tag)) + '</span>' : '') + '</span></button>';
   }).join('');
 }
+function rcaSearchHTML(slot, side){
+  const q = String(ui.rcaQ[slot] || '').trim().toLowerCase();
+  if (!q) return '';
+  const words = q.split(/\s+/);
+  const hits = sideRows(side).filter(r => { const t = (r.l1 + ' ' + r.l2 + ' ' + r.l3 + ' ' + l2Tip(r.l2)).toLowerCase(); return words.every(w => t.includes(w)); }).slice(0, 8);
+  if (!hits.length) return '<p class="small muted">No match. Try another word.</p>';
+  return hits.map(r => '<button data-act="useTag" data-i="' + slot + '" data-v="' + esc(keyOf(r)) + '"><span class="path">' + esc(r.l1 + ' > ' + r.l2) + '</span>' + esc(r.l3) + '</button>').join('');
+}
+function renderRcaSearch(slot){
+  const el = $('#rcaRes-' + slot); if (!el) return;
+  const sd = sides(cur), side = slot === 'p' ? sd.p : sd.sec;
+  el.innerHTML = side ? rcaSearchHTML(slot, side) : '';
+}
 function causePicker(slot, side){
   const r = cur.rca, c = r[slot], allowed = allowedL1(side), lensKey = slot + 'Lens';
   let h = '';
@@ -1138,6 +1237,7 @@ function causePicker(slot, side){
   cur.events.forEach(e => { if (!e.positive && e.tag && findRow(e.tag) && causeFits(parseKey(e.tag), side)) tally[e.tag] = (tally[e.tag] || 0) + 1; });
   const top = Object.entries(tally).sort((a,b) => b[1] - a[1]).slice(0, 3);
   if (top.length) h += '<div class="small muted">Suggested from your timeline tags:</div><div class="sugg">' + top.map(([k,n]) => { const p = parseKey(k); return '<button data-act="useTag" data-i="' + slot + '" data-v="' + esc(k) + '">' + (k === keyOf(c) ? '&#10003; ' : 'Use: ') + esc(p.l1 + ' > ' + p.l2 + ' > ' + p.l3) + ' <b>(' + n + ')</b></button>'; }).join('') + '</div>';
+  h += '<div class="rcasearch"><label class="sr" for="rcaQ-' + slot + '">Search root causes</label><input type="search" id="rcaQ-' + slot + '" data-ui="rcaQ" data-i="' + slot + '" value="' + esc(ui.rcaQ[slot] || '') + '" placeholder="Search ' + esc(sideL4(side)) + ' root causes (e.g. empathy, transfer, fee)" autocomplete="off"><div class="rcares" id="rcaRes-' + slot + '">' + rcaSearchHTML(slot, side) + '</div></div>';
   if (!allowed.length) return '<div class="notice bad">Your framework has no rows marked ' + esc(sideL4(side)) + '. Fix it in Settings &gt; RCA framework.</div>';
   if (allowed.length === 1 && c.l1 !== allowed[0]) { c.l1 = allowed[0]; c.l2 = ''; c.l3 = ''; }
   if (allowed.length > 1) {
@@ -1158,11 +1258,30 @@ function causePicker(slot, side){
   }
   return h;
 }
+const resetBtn = (k, label) => '<button class="reset" data-act="resetGate" data-v="' + k + '" title="Clear only this part (you can Undo)">&#8634; ' + (label || 'Reset') + '</button>';
+function gateStrip(){
+  const r = cur.rca, g = gate1(cur), {p, sec} = sides(cur);
+  const chip = (href, done, text) => '<a href="#' + href + '" class="' + (done ? 'done' : 'todo') + '">' + (done ? '&#10003; ' : '') + esc(text) + '</a>';
+  const g2txt = {yes:'Yes (' + CTRL + ')', no:'No (' + NCTRL + ')', partly:'Partly (both)'}[r.g2];
+  let h = '<div class="gstrip" aria-label="RCA progress">';
+  h += chip('gate1', g.state !== 'incomplete', 'Gate 1: ' + (g.state === 'valid' ? 'Valid' + (g.review ? ' (flagged)' : '') : g.state === 'invalid' ? 'Not valid' : 'to do'));
+  if (g.state === 'invalid') h += chip('gate1', !!r.invalidKey, r.invalidKey ? tagShort(r.invalidKey) : 'Pick reason');
+  if (g.state === 'valid') {
+    h += chip('gate2', !!p, 'Gate 2: ' + (g2txt && p ? g2txt : 'to do'));
+    if (p) h += chip('gate3', causeDone(r.p), 'Primary: ' + (causeDone(r.p) ? r.p.l1 + ' > ' + r.p.l2 : 'to do'));
+    if (p) h += chip('gate3', liveEvidence(cur, r.pEvidence).length > 0, 'Evidence: ' + liveEvidence(cur, r.pEvidence).length);
+    if (sec) h += chip('gate3s', causeDone(r.s), 'Secondary: ' + (causeDone(r.s) ? r.s.l1 + ' > ' + r.s.l2 : 'to do'));
+  }
+  return h + '</div>';
+}
 function step4(){
   const r = cur.rca, g = gate1(cur);
   let h = '';
+  const anyRca = r.q1 || r.g2 || causeDone(r.p) || r.whys.some(w => w);
+  h += '<div class="cardhead" style="align-items:center;margin-bottom:6px"><h2 style="margin:0">Step 4: Root cause analysis</h2>' + (anyRca ? resetBtn('all', 'Reset whole RCA') : '') + '</div>';
+  h += gateStrip();
   if (r.legacy) h += '<div class="notice info"><b>From the old version:</b> ' + esc(r.legacy) + '<br>Re-pick the RCA below using the ' + esc(DB.settings.frameworkName) + '.</div>';
-  h += '<div class="card"><h2>Gate 1: Survey validation</h2>';
+  h += '<div class="card" id="gate1"><div class="cardhead"><h2>Gate 1: Survey validation</h2>' + (r.q1 || r.invalidKey ? resetBtn('g1') : '') + '</div>';
   h += ynRow('q1', r.q1);
   if (r.q1 === 'yes') h += ynRow('q2', r.q2);
   if (r.q1 === 'yes' && r.q2 === 'yes') h += ynRow('q3', r.q3);
@@ -1181,7 +1300,7 @@ function step4(){
 
   if (g.state === 'valid') {
     const {p, sec} = sides(cur), miss = hasVerifMiss(cur);
-    h += '<div class="card"><h2>Gate 2: Would a fully trained, motivated advocate have avoided this DSAT?</h2>';
+    h += '<div class="card" id="gate2"><div class="cardhead"><h2>Gate 2: Would a fully trained, motivated advocate have avoided this DSAT?</h2>' + (r.g2 ? resetBtn('g2') : '') + '</div>';
     if (miss) h += '<div class="notice warn">&#9888; A verification step was missed (' + esc(cur.verif.filter(v => v.status === 'missed').map(v => v.name).join(', ')) + '). This defaults to <b>' + esc(CTRL) + '</b> unless you choose PROCESS &gt; Workflow / Content / Support Tools or PRODUCT &gt; Flagstar Outage and write a justification.</div>';
     const yesN = sideName('people'), noN = sideName('nc');
     const g2d = {yes: yesN + ' (' + CTRL + ')', no: noN + ' (' + NCTRL + ')', partly: 'Both (pick Primary + Secondary)'};
@@ -1193,17 +1312,17 @@ function step4(){
       [['people', yesN + ' is Primary', 'Secondary: ' + noN], ['nc', noN + ' is Primary', 'Secondary: ' + yesN]].map(([k,t,d]) => optCard('pside', k, r.primarySide === k, t, d, k === 'people' ? 'The ' + CTRL + ' cause mattered more. Tracker L4 = ' + CTRL + '.' : 'The ' + NCTRL + ' cause mattered more. Tracker L4 = ' + NCTRL + '.')).join('') + '</div>';
     h += '</div>';
     if (p) {
-      h += '<div class="card"><h2>Gate 3: Primary cause</h2><p class="muted small">Pick L1 &gt; L2 &gt; L3 exactly as in the ' + esc(DB.settings.frameworkName) + '. L4 fills itself.</p>' + causePicker('p', p);
+      h += '<div class="card" id="gate3"><div class="cardhead"><h2>Gate 3: Primary cause</h2>' + (r.p.l1 || r.pExplain || r.pEvidence.length ? resetBtn('p') : '') + '</div><p class="muted small">Pick L1 &gt; L2 &gt; L3 exactly as in the ' + esc(DB.settings.frameworkName) + '. L4 fills itself.</p>' + causePicker('p', p);
       h += '<label class="f" for="f_pex">Short explanation</label>' + txt('rca.pExplain', r.pExplain, {a:{id:'f_pex', placeholder:'e.g. Told customer the dispute closes in 2 days'}});
       if (miss && p === 'nc') h += '<label class="f" for="f_just">Justification: why is the verification miss Non Controllable? <span class="hint">(required)</span></label>' + area('rca.justification', r.justification, {a:{id:'f_just', placeholder:'e.g. KB shows two conflicting verification flows for this call type'}});
       h += '<h3>Evidence for Primary <span class="muted small">(link at least one timestamp)</span></h3>' + evidenceList('p', r.pEvidence, r.p) + '</div>';
     }
     if (sec) {
-      h += '<div class="card"><h2>Secondary cause</h2>' + causePicker('s', sec);
+      h += '<div class="card" id="gate3s"><div class="cardhead"><h2>Secondary cause</h2>' + (r.s.l1 || r.sExplain || r.sEvidence.length ? resetBtn('s') : '') + '</div>' + causePicker('s', sec);
       h += '<label class="f" for="f_sex">Short explanation</label>' + txt('rca.sExplain', r.sExplain, {a:{id:'f_sex'}});
       h += '<h3>Evidence for Secondary <span class="muted small">(optional)</span></h3>' + evidenceList('s', r.sEvidence, r.s) + '</div>';
     }
-    h += '<div class="card"><details' + (r.whys.some(w => w) ? ' open' : '') + '><summary>5 Whys (optional)</summary><div class="whys">' +
+    h += '<div class="card"><details' + (r.whys.some(w => w) ? ' open' : '') + '><summary>5 Whys (optional)</summary>' + (r.whys.some(w => w) ? '<div style="text-align:right">' + resetBtn('whys', 'Clear 5 Whys') + '</div>' : '') + '<div class="whys">' +
       r.whys.map((w,i) => txt('rca.whys.' + i, w, {a:{'aria-label':'Why ' + (i+1), placeholder:'Why #' + (i+1)}})).join('') + '</div></details></div>';
   }
   const errs = step4Errors(cur);
@@ -1252,6 +1371,7 @@ function step6(){
   if (pc && !cur.coaching.well && !cur.coaching.fix && !cur.coaching.tip) Object.assign(cur.coaching, coachingDefaults(cur));
   const errs = step1Errors(cur).concat(step4Errors(cur));
   let h = '';
+  if (cur.status === 'complete' && !dirty && DB.scrubs.some(x => x.id === cur.id)) h += '<div class="notice ok"><b>&#10003; Saved.</b> Copy L1-L4 into your tracker, then: <div class="row" style="margin-top:8px"><button class="btn sm primary" data-act="nextScrub" data-v="same">Next scrub: same advocate</button><button class="btn sm" data-act="nextScrub">Next scrub: new advocate</button></div></div>';
   if (errs.length) h += '<div class="notice ' + (ui.showErr ? 'bad' : 'warn') + '"><b>Not finished yet:</b><ul>' + errs.map(e => '<li>' + esc(e) + '</li>').join('') + '</ul></div>';
   const tv = trackerValues(cur);
   h += '<div class="card"><div class="row"><h2 class="grow" style="margin:0">For your RCA Matrix tracker</h2><button class="btn primary" data-act="copyTracker"' + (tv[0][1] ? '' : ' disabled') + '>Copy L1-L4 for Excel</button></div>' +
@@ -1275,17 +1395,25 @@ function step6(){
 function renderHistory(){
   return '<div class="card"><div class="row"><h1 class="grow" style="font-size:1.3rem;margin:0">Scrub history</h1>' +
     '<button class="btn sm" data-act="exportCSV">Export CSV</button><button class="btn sm" data-act="exportJSON">Export JSON</button><button class="btn sm" data-act="importJSON" data-v="merge">Import JSON</button></div>' +
-    '<label class="f" for="histQ">Search</label><input type="search" id="histQ" data-ui="histQ" value="' + esc(ui.histQ) + '" placeholder="Advocate, call ref, comment, L1, L2, L3..."></div><div id="histList"></div>';
+    '<label class="f" for="histQ">Search</label><input type="search" id="histQ" data-ui="histQ" value="' + esc(ui.histQ) + '" placeholder="Advocate, call ref, comment, L1, L2, L3...">' +
+    '<div class="row" style="margin-top:10px"><div class="seg" role="group" aria-label="Show">' + [['all','All'],['draft','Drafts'],['complete','Complete'],['open','Open actions']].map(([k,t]) => '<button class="' + (ui.histF === k ? 'sel' : '') + '" data-act="histF" data-v="' + k + '" aria-pressed="' + (ui.histF === k) + '">' + t + '</button>').join('') + '</div>' +
+    '<select data-ui="histSort" aria-label="Sort" style="width:auto;flex:0 1 200px">' + [['new','Newest first'],['old','Oldest first'],['adv','Advocate A-Z'],['upd','Recently edited']].map(([k,t]) => '<option value="' + k + '"' + (ui.histSort === k ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></div></div><div id="histList"></div>';
 }
 function renderHistList(){
   const el = $('#histList'); if (!el) return;
   const q = ui.histQ.trim().toLowerCase();
+  const F = ui.histF;
+  const sorters = {new:(a,b) => (b.date || '').localeCompare(a.date || '') || (b.updatedAt || '').localeCompare(a.updatedAt || ''), old:(a,b) => (a.date || '').localeCompare(b.date || ''),
+    adv:(a,b) => (a.advocate || '').localeCompare(b.advocate || '') || (b.date || '').localeCompare(a.date || ''), upd:(a,b) => (b.updatedAt || '').localeCompare(a.updatedAt || '')};
   const list = DB.scrubs.filter(s => {
+    if (F === 'draft' && s.status === 'complete') return false;
+    if (F === 'complete' && s.status !== 'complete') return false;
+    if (F === 'open' && !s.actions.some(a => a.status !== 'Done')) return false;
     if (!q) return true;
     const p = primaryCause(s) || {}, c = secondaryCause(s) || {};
     return [s.advocate, s.callRef, s.comment, s.date, p.l1, p.l2, p.l3, p.l4, c.l1, c.l2, c.l3, p.lens, verifResult(s).code, s.status, s.sample ? 'sample' : ''].join(' ').toLowerCase().includes(q);
-  }).sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.updatedAt || '').localeCompare(a.updatedAt || ''));
-  if (!list.length) { el.innerHTML = '<div class="card muted">' + (DB.scrubs.length ? 'No scrubs match your search.' : 'No saved scrubs yet. Start one in the Scrub tab, or load sample data in Settings.') + '</div>'; return; }
+  }).sort(sorters[ui.histSort] || sorters.new);
+  if (!list.length) { el.innerHTML = '<div class="card muted">' + (DB.scrubs.length ? 'No scrubs match your search or filter.' : 'No saved scrubs yet. Start one in the Scrub tab, or load sample data in Settings.') + '</div>'; return; }
   el.innerHTML = '<p class="muted small">' + list.length + ' scrub(s)</p>' + list.map(s => '<div class="hist"><div class="hh"><b>' + esc(s.date) + '</b> <span>' + esc(s.advocate || '(no advocate)') + '</span> <span class="muted">' + esc(s.callRef) + '</span>' +
     (s.status === 'complete' ? '<span class="badge ok">Complete</span>' : '<span class="badge warn">Draft</span>') + (s.sample ? '<span class="badge">Sample</span>' : '') + '</div>' +
     '<div class="hh">' + verifBadge(s) + rcaBadges(s) + '</div>' +
@@ -1653,9 +1781,48 @@ document.addEventListener('click', e => {
     }
     case 'addEvent': addEvent(); break;
     case 'delEvent':
+      snapshot();
       cur.events = cur.events.filter(x => x.id !== id);
       r.pEvidence = r.pEvidence.filter(x => x !== id); r.sEvidence = r.sEvidence.filter(x => x !== id);
-      touch(); render(); break;
+      touch(); render(); toast('Event deleted', 0, true); break;
+    case 'undo': {
+      if (!undoSnap) return;
+      cur = undoSnap.cur; DB.scrubs = undoSnap.scrubs; step = undoSnap.step; view = undoSnap.view; undoSnap = null;
+      saveDB(); touch(); render(); toast('Undone'); break;
+    }
+    case 'resetGate': {
+      snapshot();
+      const names = {all:'Whole RCA', g1:'Gate 1', g2:'Gate 2', p:'Primary cause', s:'Secondary cause', whys:'5 Whys'};
+      if (v === 'all') { const legacy = r.legacy; cur.rca = Object.assign(newRca(), {legacy}); ui.rcaQ = {p:'', s:''}; }
+      if (v === 'g1') Object.assign(r, {q1:'', q2:'', q3:'', invalidKey:'', ncNote:''});
+      if (v === 'g2') Object.assign(r, {g2:'', primarySide:''});
+      if (v === 'p') { Object.assign(r, {p:emptyCause(), pLens:'', pExplain:'', pEvidence:[], justification:''}); ui.rcaQ.p = ''; }
+      if (v === 's') { Object.assign(r, {s:emptyCause(), sLens:'', sExplain:'', sEvidence:[]}); ui.rcaQ.s = ''; }
+      if (v === 'whys') r.whys = ['','','','',''];
+      ui.showErr = false; touch(); render(); toast(names[v] + ' reset', 0, true); break;
+    }
+    case 'timer': {
+      if (v === 'toggle') timerToggle();
+      else if (v === 'reset') { timer.running = false; timer.base = 0; clearInterval(timer.iv); }
+      else if (v === 'sync') {
+        const n = normTs(ui.ev.ts || ($('#evTs') || {}).value);
+        if (!n) { toast('Type the player time in the time box first (mm:ss)'); return; }
+        timer.base = tsSec(n) * 1000; if (timer.running) timer.start = Date.now(); ui.ev.ts = '';
+        toast('Timer set to ' + n);
+      } else { const d = +v * 1000; timer.base = Math.max(0, timer.base + d); }
+      render(); break;
+    }
+    case 'useTimer': {
+      if (!timerMs()) { toast('Start the timer first (when you press play on the recording)'); return; }
+      ui.ev.ts = fmtMs(timerMs()); render(); const n = $('#evNote'); if (n) n.focus(); break;
+    }
+    case 'stampVerif': cur.verif[+i].ts = fmtMs(timerMs()); touch(); render(); break;
+    case 'nextScrub': {
+      const adv = v === 'same' ? cur.advocate : '', date = cur.date;
+      startNew(true); cur.advocate = adv; cur.date = date; render(); toast(adv ? 'New scrub for ' + adv : 'New scrub started'); break;
+    }
+    case 'histF': ui.histF = v; render(); break;
+    case 'theme': { const order = ['light','dark','auto'], t = order[(order.indexOf(currentTheme()) + 1) % 3]; setTheme(t); toast('Theme: ' + {light:'Light', dark:'Dark', auto:'Auto (follows your device)'}[t]); break; }
     case 'gq': {
       r[i] = v;
       if (i === 'q1' && v === 'no') { r.q2 = ''; r.q3 = ''; }
@@ -1676,17 +1843,24 @@ document.addEventListener('click', e => {
       if (v === 'partly' && r.g2 !== 'partly') r.primarySide = prevSide || r.primarySide;
       r.g2 = v;
       const sd = sides(cur);
-      if (!sd.p || !causeFits(r.p, sd.p)) setCause('p', {});
-      if (!sd.sec || !causeFits(r.s, sd.sec)) setCause('s', {});
+      // keep picks that still fit; with "Partly" and no Primary side chosen yet, keep them until a side is picked
+      if (sd.p && !causeFits(r.p, sd.p)) setCause('p', {});
+      if (v !== 'partly' && r.s.l1) setCause('s', {});
+      else if (sd.sec && !causeFits(r.s, sd.sec)) setCause('s', {});
       touch(); render(); break;
     }
     case 'pside': {
-      if (r.primarySide !== v) {
-        const oldP = {c:r.p, lens:r.pLens, ex:r.pExplain, ev:r.pEvidence};
-        r.p = r.s; r.pLens = r.sLens; r.pExplain = r.sExplain; r.pEvidence = r.sEvidence;
-        r.s = oldP.c; r.sLens = oldP.lens; r.sExplain = oldP.ex; r.sEvidence = oldP.ev;
+      const prev = r.primarySide;
+      if (prev !== v) {
+        const swap = () => {
+          const oldP = {c:r.p, lens:r.pLens, ex:r.pExplain, ev:r.pEvidence};
+          r.p = r.s; r.pLens = r.sLens; r.pExplain = r.sExplain; r.pEvidence = r.sEvidence;
+          r.s = oldP.c; r.sLens = oldP.lens; r.sExplain = oldP.ex; r.sEvidence = oldP.ev;
+        };
         r.primarySide = v;
         const sd = sides(cur);
+        // flipping sides swaps Primary and Secondary; choosing a side for the first time only swaps when the existing pick belongs on the other side
+        if (prev || (r.p.l1 && !causeFits(r.p, sd.p) && causeFits(r.p, sd.sec))) swap();
         if (!causeFits(r.p, sd.p)) setCause('p', {});
         if (!causeFits(r.s, sd.sec)) setCause('s', {});
       }
@@ -1697,7 +1871,7 @@ document.addEventListener('click', e => {
     case 'pickL3': r[i].l3 = v; touch(); render(); break;
     case 'pickLens': r[i + 'Lens'] = r[i + 'Lens'] === v ? '' : v; touch(); render(); break;
     case 'useTag': {
-      setCause(i, parseKey(v));
+      setCause(i, parseKey(v)); ui.rcaQ[i] = '';
       // also link the events with that tag as evidence
       const key = i === 'p' ? 'pEvidence' : 'sEvidence';
       cur.events.forEach(e => { if (e.tag === v && !r[key].includes(e.id)) r[key].push(e.id); });
@@ -1710,7 +1884,7 @@ document.addEventListener('click', e => {
     }
     case 'resetActions': cur.actions = suggestActions(cur); cur.actionsKey = actionsKey(cur); touch(); render(); break;
     case 'addAction': cur.actions.push({id:uid(), role:'', cause:'', action:'', owner:'Mentor', due:addDays(today(), 7), status:'Open', auto:false, edited:true}); touch(); render(); break;
-    case 'delAction': cur.actions = cur.actions.filter(a => a.id !== id); touch(); render(); break;
+    case 'delAction': snapshot(); cur.actions = cur.actions.filter(a => a.id !== id); touch(); render(); toast('Action deleted', 0, true); break;
     case 'actStatus': cur.actions[+i].status = v; cur.actions[+i].edited = true; touch(); render(); break;
     case 'copySummary': copyText(summaryText(cur), 'Summary copied'); break;
     case 'copyCoach': copyText(cur.coaching.polished || coachingText(cur), 'Coaching note copied'); break;
@@ -1746,10 +1920,11 @@ document.addEventListener('click', e => {
     case 'copyTrackerOf': { const s = DB.scrubs.find(x => x.id === id); if (!s) return; if (!primaryCause(s)) { toast('RCA not finished for this scrub'); return; } copyText(trackerValues(s).map(x => tsvCell(x[1])).join('\t'), 'L1-L4 copied'); break; }
     case 'delScrub': {
       const s = DB.scrubs.find(x => x.id === id); if (!s) return;
-      if (!confirm('Delete the scrub for ' + (s.advocate || 'unknown') + ' (' + (s.callRef || s.date) + ')? This cannot be undone.')) return;
+      if (!confirm('Delete the scrub for ' + (s.advocate || 'unknown') + ' (' + (s.callRef || s.date) + ')?')) return;
+      snapshot();
       DB.scrubs = DB.scrubs.filter(x => x.id !== id); saveDB();
       if (cur && cur.id === id) { cur = newScrub(); step = 1; dirty = false; lsDel(LS_CUR); }
-      render(); toast('Scrub deleted'); break;
+      render(); toast('Scrub deleted', 0, true); break;
     }
     case 'range':
       if (v === 'clear') ui.filt = {from:'', to:'', adv:''};
@@ -1813,9 +1988,20 @@ document.addEventListener('keydown', e => {
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('[role=button][data-act]')) { e.preventDefault(); e.target.click(); }
   if (e.key === 'Enter' && (e.target.id === 'evNote' || e.target.id === 'evTs')) { e.preventDefault(); addEvent(); }
   if (e.key === 'Escape') hideTip();
+  if (view !== 'scrub') return;
+  const ctrl = e.ctrlKey || e.metaKey;
+  if (ctrl && !e.altKey && (e.key === 's' || e.key === 'S')) { e.preventDefault(); commitScrub(cur.status === 'complete' ? 'complete' : 'draft'); return; }
+  if (!e.altKey || ctrl) return;
+  if (e.key === 'ArrowRight') { e.preventDefault(); const nb = document.querySelector('[data-act="next"]'); if (nb) nb.click(); }
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); if (step > 1) document.querySelector('[data-act="back"]').click(); }
+  else if (/^Digit[1-6]$/.test(e.code)) { e.preventDefault(); goStep(+e.code.slice(5)); }
+  else if (e.code === 'KeyT') { e.preventDefault(); if (step === 3) { const b = document.querySelector('[data-act="useTimer"]'); if (b) b.click(); } }
+  else if (e.code === 'KeyP') { e.preventDefault(); timerToggle(); if (step === 2 || step === 3) render(); }
 });
 function addEvent(){
-  const f = ui.ev, ts = normTs(f.ts);
+  const f = ui.ev;
+  if (!f.ts.trim() && timerMs()) f.ts = fmtMs(timerMs());
+  const ts = normTs(f.ts);
   if (!ts) { ui.evErr = 'Enter the time as mm:ss (for example 03:15).'; render(); const t = $('#evTs'); if (t) t.focus(); return; }
   if (!f.chip && !f.note.trim()) { ui.evErr = 'Pick a chip or type a note.'; render(); return; }
   if (hasPII(f.note)) { ui.evErr = 'Remove the 6+ digit number from the note before adding.'; render(); return; }
@@ -1837,6 +2023,8 @@ document.addEventListener('input', e => {
   if (el.dataset.ui) {
     const k = el.dataset.ui;
     if (k === 'histQ') { ui.histQ = el.value; renderHistList(); return; }
+    if (k === 'rcaQ') { ui.rcaQ[el.dataset.i] = el.value; renderRcaSearch(el.dataset.i); return; }
+    if (k === 'histSort') return;
     if (k === 'fwQ') { ui.fwQ = el.value; renderFwList(); return; }
     if (k === 'fwPaste' || k === 'fwName') { ui[k] = el.value; return; }
     if (k === 'fwFilter') return;
@@ -1877,6 +2065,7 @@ document.addEventListener('change', e => {
     return;
   }
   if (el.dataset.ui === 'tag') { ui.ev.tag = el.value; return; }
+  if (el.dataset.ui === 'histSort') { ui.histSort = el.value; renderHistList(); return; }
   if (el.dataset.ui === 'fwFilter') { ui.fwFilter = el.value; renderFwList(); return; }
   if (el.dataset.filt) { ui.filt[el.dataset.filt] = el.value; render(); return; }
   if (el.dataset.scheck != null) { DB.settings.verifSteps[+el.dataset.scheck].critical = el.checked; saveDB(); return; }
@@ -1920,6 +2109,7 @@ loadDB();
   if (stepsUpdated) setTimeout(() => toast('Verification steps updated: Properly Verified, Checked Alerts and Restrictions', 4000), 300);
   if (!lsSet('dsatScrubBuddy.test', '1')) storageOK = false; else lsDel('dsatScrubBuddy.test');
 })();
+setTheme(currentTheme());
 render();
 </script>
 </body>
